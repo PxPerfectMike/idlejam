@@ -1,22 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 38
 __lua__
+#include main.lua
 
-function _init()
-end
 
-function _update()
-end
-
-function _draw()
-end
--->8 -- page 1 -- (page purpose here)
-
--->8 -- page 2 -- (page purpose here)
-
--->8 -- page 3 -- (page purpose here)
-
--->8
 
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
