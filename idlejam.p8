@@ -5,20 +5,20 @@ __lua__
 #include main.lua
 
 function _init()
-  print("ln(1) = " .. ln(1))
-  print("ln(e) = " .. ln(2.71828))
-  -- should be close to 1
-  print("ln(7) = " .. ln(7))
+    print("ln(1) = " .. ln(1))
+    print("ln(e) = " .. ln(2.71828))
+    -- should be close to 1
+    print("ln(7) = " .. ln(7))
 
-  print("2^5 = " .. pow(2, 5))
+    print("2^5 = " .. pow(2, 5))
 end
 
 --[[
-  each generator needs
-  - initial cost
-  - cost coefficient (aka cost growth)
-  - inital Time
-  - base production
+    each generator needs
+    - initial cost
+    - cost coefficient (aka cost growth)
+    - inital Time
+    - base production
 ]]
 
 function _update()
@@ -31,38 +31,38 @@ end
 -->8 -- page 2 -- (math)
 -- credit for the equations goes to Anthony Percorella, "The Math of Idle Games, Part 1", Kongregate Developers Blog
 --[[
-  find how much the next upgrade cost
-  b = the base price
-  r = the price growth rate exponent
+    find how much the next upgrade cost
+    b = the base price
+    r = the price growth rate exponent
 ]]
 function cost_next(b, r)
-  return b * r
+    return b * r
 end
 
 --[[
-  find how much the next upgrade cost
-  b = the base price
-  r = the price growth rate exponent
-  k = the number of generators currently owned
+    find how much the next upgrade cost
+    b = the base price
+    r = the price growth rate exponent
+    k = the number of generators currently owned
 ]]
 function cost_next(b, r, k)
-  return b * pow(r, k)
+    return b * pow(r, k)
 end
 
 -- find how much each generator makes per unit of measurement
 function production_total(_production_base, _owned, _multipliers)
-  return _production_base * _owned * _multipliers
+    return _production_base * _owned * _multipliers
 end
 
 --[[
-  find how much it costs to buy in bulk ammount
-  n = the number of generators to buy
-  b = the base price
-  r = the price growth rate exponent
-  k = the number of generators currently owned
+    find how much it costs to buy in bulk ammount
+    n = the number of generators to buy
+    b = the base price
+    r = the price growth rate exponent
+    k = the number of generators currently owned
 ]]
 function bulk_buy_cost(b, r, k, n)
-  return b * pow(r, k) * (pow(r, n) - 1) / (r - 1)
+    return b * pow(r, k) * (pow(r, n) - 1) / (r - 1)
 end
 
 --[[
@@ -73,7 +73,7 @@ end
   c = the amount of currency owned
 ]]
 function max_buy_ammount(b, r, k, c)
-  return flr(ln(c * (r - 1) / b * pow(r, k) + 1) / ln(r))
+    return flr(ln(c * (r - 1) / b * pow(r, k) + 1) / ln(r))
 end
 -->8 -- page 3 -- (page purpose here)
 
