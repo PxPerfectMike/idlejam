@@ -13,13 +13,11 @@ function _init()
   print("2^5 = " .. pow(2, 5))
 end
 
--- hi
-
 --[[
   each generator needs
   - initial cost
   - cost coefficient (aka cost growth)
-  - inital Time
+  - inital Time/rate
   - base production
 ]]
 
@@ -42,7 +40,7 @@ function cost_next(b, r)
 end
 
 --[[
-  find how much the next upgrade cost
+find how much the next upgrade cost
   b = the base price
   r = the price growth rate exponent
   k = the number of generators currently owned
