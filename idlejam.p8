@@ -13,6 +13,8 @@ function _init()
   print("2^5 = " .. pow(2, 5))
 end
 
+-- hi
+
 --[[
   each generator needs
   - initial cost
