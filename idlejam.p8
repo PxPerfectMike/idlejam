@@ -67,10 +67,10 @@ end
 
 --[[
     what is the maximum ammount of units you can buy
-  b = the base price
-  r = the price growth rate exponent
-  k = the number of generators currently owned
-  c = the amount of currency owned
+    b = the base price
+    r = the price growth rate exponent
+    k = the number of generators currently owned
+    c = the amount of currency owned
 ]]
 function max_buy_ammount(b, r, k, c)
     return flr(ln(c * (r - 1) / b * pow(r, k) + 1) / ln(r))
