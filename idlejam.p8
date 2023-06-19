@@ -66,7 +66,7 @@ function bulk_buy_cost(b, r, k, n)
 end
 
 --[[
-  what is the maximum ammount of units you can buy
+    what is the maximum ammount of units you can buy
   b = the base price
   r = the price growth rate exponent
   k = the number of generators currently owned
