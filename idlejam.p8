@@ -3,14 +3,38 @@ version 38
 __lua__
 
 #include main.lua
+#include longNum.lua
 
 function _init()
   print("ln(1) = " .. ln(1))
   print("ln(e) = " .. ln(2.71828))
   -- should be close to 1
-  print("ln(7) = " .. ln(7))
+  print("ln(54) = " .. ln(54))
+
+  --print("ln(54) = " .. newtonRaphsonLog(54))
 
   print("2^5 = " .. pow(2, 5))
+
+  print("cost next: 4 x (1.07)^10 = " .. cost_next(4, 1.07, 10))
+  print("production total:\n(1.67 x 10) x 1 = " .. total_production(1.67, 10, 1))
+
+  local ammount = max_buy_ammount(4, 1.07, 1, 100)
+  local cost = bulk_buy_cost(4, 1.07, 1, ammount)
+  print("maximum can by with 100 is " .. ammount)
+  print("which is equal to " .. cost)
+
+  local float = 12345.6789
+
+  print("float: " .. float)
+
+  local double = make_long_num('12000500.01')
+  local str = long_num_to_string(double)
+  print(str)
+
+  local double2 = make_long_num("120500.00001")
+  print(long_num_to_string(double2))
+
+  print(long_num_to_string(add_long_nums(double, double2)))
 end
 
 --[[
@@ -18,7 +42,7 @@ end
     - initial cost
     - cost coefficient (aka cost growth)
     - inital Time/rate
-    - base production
+    - base production (rate)
 ]]
 
 function _update()
@@ -49,8 +73,15 @@ function cost_next(b, r, k)
   return b * pow(r, k)
 end
 
+--[[
+    takes a float and rounds it to format it like money
+]]
+function float_to_money(x)
+  --x * 1000 % 10
+end
+
 -- find how much each generator makes per unit of measurement
-function production_total(_production_base, _owned, _multipliers)
+function total_production(_production_base, _owned, _multipliers)
   return _production_base * _owned * _multipliers
 end
 
