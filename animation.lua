@@ -12,6 +12,7 @@ rightmost_ground_x = 128
 ground = {}
 sky = {}
 
+-- all tables spawn by index and must be in the same order to maintain theme consistency
 -- table of sprite numbers for the run animation
 character_table = {
     {name = "little_guy", frames = {16, 18, 20, 22}},
@@ -21,8 +22,16 @@ character_table = {
     {name = "spaceship", frames = {88, 90, 92, 94}}
 }
 
-ground_table = {{name = "grass", frames = {120, 121, 122, 123, 124, 125, 126, 127}}}
+-- all tables spawn by index and must be in the same order to maintain theme consistency
+ground_table = {
+    {name = "grass", frames = {120, 121, 122, 123, 124, 125, 126, 127}},
+    {name = "ds_ground", frames = {152, 153, 154, 155, 156, 157, 158, 159}},
+    {name = "watermelon", frames = {168, 169, 170, 171, 172, 173, 174, 175}},
+    {name = "graveyard", frames = {136, 137, 138, 139, 140, 141, 142, 143}},
+    {name = "space", frames = {184, 185, 186, 187, 188, 189, 190, 191}}
+}
 
+-- all tables spawn by index and must be in the same order to maintain theme consistency
 sky_table = {
     {name = "sky", row = 1, frames = {96, 97, 98, 99, 100, 101, 102, 103}},
     {name = "sky", row = 2, frames = {96, 97, 98, 99, 100, 101, 102, 103}},
@@ -52,7 +61,8 @@ function _init()
 
     -- initialize ground with enough sprites to fill the screen
     for i = 0, 15 do
-        add(ground, {x = i * 8, frame = ground_table[1].frames[flr(rnd(#ground_table[1].frames)) + 1]})
+        ------------>changed both ground_table indexes from 1 to level
+        add(ground, {x = i * 8, frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1]})
     end
 
 -- initialize sky with enough sprites to fill the screen
@@ -94,7 +104,7 @@ end
         -- if a sprite goes off screen on the left, move it to the right side and change its frame
         if g.x < -8 then
             g.x = g.x + 128
-            g.frame = ground_table[1].frames[flr(rnd(#ground_table[1].frames)) + 1]
+            g.frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1]
         end
     end
 
