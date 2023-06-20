@@ -151,77 +151,99 @@ function is_int(ln)
     return ln.decimal == 0
 end
 
+-- see which number is further from zero
+function furthest_from_zero(ln1, ln2)
+    -- long number one's pre-deciaml value places
+    local ln1_pre = pre_decimal_value_places(ln1)
+    -- long number two's pre-deciaml value places
+    local ln2_pre = pre_decimal_value_places(ln2)
+
+    -- long number one's pos-deciaml value places
+    local ln1_post = post_decimal_value_places(ln1)
+    -- long number two's pos-deciaml value places
+    local ln2_post = post_decimal_value_places(ln2)
+
+    -- if the two nums don't have the same number of greater than ones value place
+    if ln1_pre != ln2_pre then
+        return ln1_pre > ln2_pre and 1 or 2
+    else
+        -- if the nums have the same number of greater than ones value place
+        local i = 1
+        -- compare all shared value places and see which one is greater
+        while i <= #ln1.values and i <= #ln2.values do
+            if ln1.values[i] != ln2.values[i] then
+                return ln1.values[i] > ln2.values[i] and 1 or 2
+            end
+            i += 1
+        end
+        -- if neither is greater
+
+        -- if one number has more value places less than ones
+        if ln1_post != ln2_post then
+            return ln1_post > ln2_post and 1 or 2
+        else
+            return 0
+        end
+    end
+end
+
 -- adding together two long numbers
 function add_long_nums(ln1, ln2)
     -- long number one's pre-deciaml value places
     local ln1_pre = pre_decimal_value_places(ln1)
     -- long number two's pre-deciaml value places
     local ln2_pre = pre_decimal_value_places(ln2)
-    -- the longest pre-decimal value places
-    local longest_pre = max(ln1_pre, ln2_pre)
-    -- the difference between the start of ln1 and ln2
-    local pre_diff = ln1_pre > ln2_pre and ln1_pre - ln2_pre or ln2_pre - ln1_pre
-    -- which long number is less than the other
-    local ln2_less_than = ln1_pre > ln2_pre
 
-    -- long number one's pos-deciaml value places
-    local ln1_post = post_decimal_value_places(ln1)
-    -- long number two's pos-deciaml value places
-    local ln2_post = post_decimal_value_places(ln2)
-    -- the longest post-decimal value places
-    local longest_post = ln1_post > ln2_post and ln1_post or ln2_post
+    local greater_num = furthest_from_zero(ln1, ln2)
 
     -- if the two nums don't have the same positivity
-    --      if the two nums don't have the same number of greater than ones value place
-    --          then the positivity is inherated from the number with the greater number of value places
-    --      if the nums have the same number of greater than ones value place
-    --          compare all value places greater than and equal to ones until a difference is found
-    --              if a difference is found
-    --                  then the positivity is inherated from the number with a higher value in this value place
-    --              if a difference isn't found
-    --                  compare all value places less than ones until a difference is found
-
-    --p =
-
-    for i = 1, longest_pre + longest_post do
-        if ln2_less_than then
-            if ln1.decimal == i then print(".") end
-            local ln1_val = (ln1.values[i] or 0) * (ln1.pos and 1 or -1)
-            local ln2_val = (ln2.values[i - pre_diff] or 0) * (ln2.pos and 1 or -1)
-
-            print("" .. ln1_val .. " + " .. ln2_val .. " = " .. ln1_val + ln2_val)
-        else
-            if ln2.decimal == i then print(".") end
-            local ln1_val = (ln1.values[i - pre_diff] or 0) * (ln1.pos and 1 or -1)
-            local ln2_val = (ln2.values[i] or 0) * (ln2.pos and 1 or -1)
-            print("" .. ln1_val .. " + " .. ln2_val .. " = " .. ln1_val + ln2_val)
+    if ln1.pos != ln2.pos then
+        if greater_num == 0 then
+            return {
+                values = { 0 },
+                decimal = 0,
+                pos = true
+            }
         end
     end
-end
 
---[[
-function add_long_nums(num1, num2)
-    local result = { values = {}, decimal = 0, pos = true }
+    -- the greater one will subtract the lesser one if it's subtraction
+    local greater = greater_num == 1 and ln1 or ln2
+    local lesser = greater_num == 1 and ln2 or ln1
 
-    local max_len = max(#num1.values, #num2.values)
+    -- all the value places that need to be traversed
+    local max_val_place = max(ln1_pre, ln2_pre)
+            + max(post_decimal_value_places(ln1), post_decimal_value_places(ln2))
+
+    -- the difference between the start of ln1 and ln2
+    local pre_diff = max(ln1_pre - ln2_pre, ln2_pre - ln1_pre)
+
+    -- the result string
+    local result = ''
+
+    -- for carrying over values
     local carry = 0
 
-    for i = 0, max_len - 1 do
-        local val1 = num1.values[#num1.values - i] or 0
-        local val2 = num2.values[#num2.values - i] or 0
+    -- do the addition calculation
+    for i = 1, max_val_place do
+        local val_place = max_val_place - i + 1
 
-        local sum = val1 + val2 + carry
+        -- add the value places together
+        local sum = (greater.values[val_place] or 0)
+                + (lesser.values[val_place - pre_diff] or 0)
+                * (ln1.pos == ln2.pos and 1 or -1) + carry
+
+        result = sum % 10 .. result
         carry = flr(sum / 10)
-        result.values[1 + i] = sum % 10
+
+        if (greater.decimal != 0 and greater.decimal or #greater.values + 1) == val_place then
+            result = '.' .. result
+        end
     end
 
-    if carry > 0 then
-        add(result.values, carry)
-    end
+    if not greater.pos then result = '-' .. result end
 
-    result.decimal = max(num1.decimal, num2.decimal)
-    result.pos = num1.pos == num2.pos or #result.values == 1 and result.values[1] == 0
-
-    return result
+    return make_long_num(result)
 end
-]]
+
+function round_up() end

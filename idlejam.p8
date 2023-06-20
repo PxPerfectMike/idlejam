@@ -27,14 +27,25 @@ function _init()
 
   print("float: " .. float)
 
-  local double = make_long_num('12000500.01')
+  local double = make_long_num('12000599.01')
   local str = long_num_to_string(double)
   print(str)
 
-  local double2 = make_long_num("120500.00001")
+  local double2 = make_long_num("-120599.00001")
   print(long_num_to_string(double2))
 
-  print(long_num_to_string(add_long_nums(double, double2)))
+  --add_long_nums(double, double2)
+
+  local double3 = make_long_num("-12059901")
+  local double4 = make_long_num("-12059901")
+
+  print('' .. long_num_to_string(double3) .. ' + ' .. long_num_to_string(double4) .. ' = ')
+
+  print(long_num_to_string(add_long_nums(double3, double4)))
+
+  print("start stress test")
+  add_long_nums(make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"), make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"))
+  print("stress test done")
 end
 
 --[[
