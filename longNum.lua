@@ -271,38 +271,30 @@ function add_long_nums(ln1, ln2)
 end
 
 function multiply_long_nums(num1, num2)
-    -- the value places indexed from smallest -> greatest so smallest value place = 1, greatest value place is n
-    local temp = {}
-    -- for carrying over values
-    local carry = 0
     -- for optimization table access overhead
     local num1_vals = num1.values
     local num2_vals = num2.values
 
+    local temp = {}
+    for _ = 1, #num1_vals + #num2_vals, 1 do
+        add(temp, 0)
+    end
+
     -- do the multiplication calculation
     for i = #num2_vals, 1, -1 do
-        local ten_pow = #num2_vals - i
-        --10 * ten_pow
-
-        -- determins what value place
         for j = #num1_vals, 1, -1 do
-            -- find what value place it needs to be
             local value_place = #num1_vals - j + #num2_vals - i + 1
-
-            -- find the product
-            local product = num2_vals[i] * num1_vals[j] + (temp[value_place] or 0)
-
-            -- record the value
+            local product = num2_vals[i] * num1_vals[j] + temp[value_place]
             temp[value_place] = product % 10
-            -- find the carry over
-            carry = flr(product / 10)
-            -- handle the carry value immediately
-            local carry_place = value_place + 1
-            while carry > 0 do
-                local sum = carry + (temp[carry_place] or 0)
-                temp[carry_place] = sum % 10
-                carry = flr(sum / 10)
-            end
+            temp[value_place + 1] = temp[value_place + 1] + flr(product / 10)
+        end
+    end
+
+    for i = 2, #temp, 1 do
+        if temp[i] > 9 then
+            local carry = flr(temp[i] / 10)
+            temp[i] = temp[i] % 10
+            temp[i + 1] = temp[i + 1] + carry
         end
     end
 
@@ -311,16 +303,12 @@ function multiply_long_nums(num1, num2)
         add(v, temp[i])
     end
 
-    -- the total number of value places post decimal place
     local total_post_dist = post_decimal_value_places(num1) + post_decimal_value_places(num2)
-
-    -- decimal point is equal to (num1 post decimal + num2 post decimal) - totally value places
     local d = total_post_dist == 0 and 0 or #v - total_post_dist + 1
 
     return {
         values = v,
         decimal = d,
-        -- positivity (if equal, then its positive otherwise it's negative)
         pos = num1.pos == num2.pos
     }
 end
