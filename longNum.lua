@@ -290,6 +290,7 @@ function multiply_long_nums(num1, num2)
         end
     end
 
+    -- do the carry over math
     for i = 2, #v, 1 do
         if v[i] > 9 then
             local carry = flr(v[i] / 10)
@@ -298,6 +299,7 @@ function multiply_long_nums(num1, num2)
         end
     end
 
+    -- invert table
     for i = 1, flr(#v / 2) do
         local backend = #v - i + 1
         local temp = v[backend]
