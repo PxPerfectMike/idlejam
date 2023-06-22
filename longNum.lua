@@ -297,8 +297,8 @@ function multiply_long_nums(num1, num2)
             -- find the carry over
             carry = flr(product / 10)
             -- handle the carry value immediately
+            local carry_place = value_place + 1
             while carry > 0 do
-                local carry_place = value_place + 1
                 local sum = carry + (temp[carry_place] or 0)
                 temp[carry_place] = sum % 10
                 carry = flr(sum / 10)
