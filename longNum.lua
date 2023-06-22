@@ -271,37 +271,37 @@ function add_long_nums(ln1, ln2)
 end
 
 function multiply_long_nums(num1, num2)
-    assert(num1, 'invalid input: num1 is not a value')
-
     -- the value places indexed from smallest -> greatest so smallest value place = 1, greatest value place is n
     local temp = {}
     -- for carrying over values
     local carry = 0
+    -- for optimization table access overhead
+    local num1_vals = num1.values
+    local num2_vals = num2.values
 
     -- do the multiplication calculation
-    for i = #num2.values, 1, -1 do
-        local ten_pow = #num2.values - i
+    for i = #num2_vals, 1, -1 do
+        local ten_pow = #num2_vals - i
         --10 * ten_pow
 
         -- determins what value place
-        for j = #num1.values, 1, -1 do
+        for j = #num1_vals, 1, -1 do
             -- find what value place it needs to be
-            local value_place = #num1.values - j + #num2.values - i + 1
+            local value_place = #num1_vals - j + #num2_vals - i + 1
 
             -- find the product
-            local product = num2.values[i] * num1.values[j] + (temp[value_place] or 0)
+            local product = num2_vals[i] * num1_vals[j] + (temp[value_place] or 0)
 
             -- record the value
             temp[value_place] = product % 10
             -- find the carry over
             carry = flr(product / 10)
             -- handle the carry value immediately
-            local carry_place = value_place + 1
             while carry > 0 do
+                local carry_place = value_place + 1
                 local sum = carry + (temp[carry_place] or 0)
                 temp[carry_place] = sum % 10
                 carry = flr(sum / 10)
-                carry_place += 1
             end
         end
     end
