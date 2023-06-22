@@ -275,32 +275,34 @@ function multiply_long_nums(num1, num2)
     local num1_vals = num1.values
     local num2_vals = num2.values
 
-    local temp = {}
+    local v = {}
     for _ = 1, #num1_vals + #num2_vals, 1 do
-        add(temp, 0)
+        add(v, 0)
     end
 
     -- do the multiplication calculation
     for i = #num2_vals, 1, -1 do
         for j = #num1_vals, 1, -1 do
             local value_place = #num1_vals - j + #num2_vals - i + 1
-            local product = num2_vals[i] * num1_vals[j] + temp[value_place]
-            temp[value_place] = product % 10
-            temp[value_place + 1] = temp[value_place + 1] + flr(product / 10)
+            local product = num2_vals[i] * num1_vals[j] + v[value_place]
+            v[value_place] = product % 10
+            v[value_place + 1] = v[value_place + 1] + flr(product / 10)
         end
     end
 
-    for i = 2, #temp, 1 do
-        if temp[i] > 9 then
-            local carry = flr(temp[i] / 10)
-            temp[i] = temp[i] % 10
-            temp[i + 1] = temp[i + 1] + carry
+    for i = 2, #v, 1 do
+        if v[i] > 9 then
+            local carry = flr(v[i] / 10)
+            v[i] = v[i] % 10
+            v[i + 1] = v[i + 1] + carry
         end
     end
 
-    local v = {}
-    for i = #temp, 1, -1 do
-        add(v, temp[i])
+    for i = 1, flr(#v / 2) do
+        local backend = #v - i + 1
+        local temp = v[backend]
+        v[backend] = v[i]
+        v[i] = temp
     end
 
     local total_post_dist = post_decimal_value_places(num1) + post_decimal_value_places(num2)
