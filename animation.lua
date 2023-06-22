@@ -136,11 +136,12 @@ function character_switch()
     if (level < 1) level = 5
 end
 
+max_speed = 20
 function speed_switch()
     if (btnp(⬆️)) speed += 1
     if (btnp(⬇️)) speed -= 1
-    if (speed > 19) speed = 1
-    if (speed < 1) speed = 19
+    if (speed > max_speed) speed = 1
+    if (speed < 1) speed = max_speed
 
     -- Here's the updated mapping for sky_speed.
     -- We raise 1.1 to the power of (speed - 1), and then divide by 20 to get the range we want.
