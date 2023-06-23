@@ -5,6 +5,7 @@ __lua__
 #include main.lua
 #include animation.lua
 #include longNum.lua
+#include defines.lua
 
 function _init()
     print("ln(1) = " .. ln(1))
@@ -14,7 +15,7 @@ function _init()
 
     --print("ln(54) = " .. newtonRaphsonLog(54))
 
-    print("2^5 = " .. pow(2, 5))
+    print("2^5 = " .. 2 ^ 5)
 
     print("cost next: 4 x (1.07)^10 = " .. cost_next(4, 1.07, 10))
     print("production total:\n(1.67 x 10) x 1 = " .. total_production(1.67, 10, 1))
@@ -28,38 +29,72 @@ function _init()
 
     print("float: " .. float)
 
-    local double = make_long_num('12000599.01')
-    local str = long_num_to_string(double)
-    print(str)
+    local double = long_num('-1200.1000000')
+    --local str = long_num_to_string(double)
+    print(double)
+    local num = 123.456789123
+    print(tostr(num))
 
-    local double2 = make_long_num("-120599.00001")
+    local double3 = long_num("-12059901.01")
+    local double4 = long_num("-12059901.09")
+    local double5 = print('' .. double3 .. ' + ' .. double4 .. ' =\n' .. double3 + double4)
+
+    local double6 = double5 + 0.003
+
+    print(double6)
+
+    -- print(long_num("-1.2") * long_num("-1.2"))
+
+    local a = long_num("12345.6789")
+    local b = long_num("12345.6789")
+    local c = a * a * a
+    --local c = a ^ 2
+    print(a ^ 3 == c)
+
+    --print(type(double3 + double4))
+
+    --[[
+    local double2 = long_num("-120599.00001")
     print(long_num_to_string(double2))
 
     --add_long_nums(double, double2)
 
-    local double3 = make_long_num("-12059901.01")
-    local double4 = make_long_num("-12059901.09")
+    local double3 = long_num("-12059901.01")
+    local double4 = long_num("-12059901.09")
 
     print('' .. long_num_to_string(double3) .. ' + ' .. long_num_to_string(double4) .. ' = ')
 
     print(long_num_to_string(add_long_nums(double3, double4)))
 
+    print("stress test add long nums:")
     print("start stress test")
-    --add_long_nums(make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"), make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"))
+    add_long_nums(long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"), long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"))
     print("stress test done")
 
-    local double5 = make_long_num("999.999")
-    local double6 = make_long_num("999.999")
+    local double5 = long_num("999.999")
+    local double6 = long_num("999.999")
 
     print('' .. long_num_to_string(double5) .. ' x ' .. long_num_to_string(double6) .. ' = ')
     print(long_num_to_string(multiply_long_nums(double5, double6)))
 
+    print("stress test multiply long nums:")
     print("start stress test")
-    local stress_test = multiply_long_nums(make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"), make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"))
+    local stress_test = multiply_long_nums(long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"), long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"))
     print("stress test done")
 
     print(long_num_to_string(stress_test))
     print("it has " .. #stress_test.values .. " value places")
+
+    --err_check(false, "test", 1)
+    add_define("max_coin", 50)
+    add_define("max_coin", 100)
+    print(get_define("max_coin"))
+
+    add_define("test var", true)
+    print(get_define("test var"))
+
+    --print(get_define("max_coins"))
+    ]]
 end
 
 function _update()

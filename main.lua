@@ -14,7 +14,7 @@ end
 
 function exp(x)
     --2.718281828459
-    return pow(2.71828, x)
+    --return pow(2.71828, x)
 end
 
 function newtonRaphsonLog(x)
@@ -29,13 +29,4 @@ function newtonRaphsonLog(x)
     end
 
     return guess
-end
-
--- raises x to the power of n
-function pow(x, n)
-    local x_n = 1
-    for i = 1, n do
-        x_n *= x
-    end
-    return x_n
 end

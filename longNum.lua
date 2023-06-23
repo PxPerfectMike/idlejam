@@ -1,3 +1,6 @@
+-- a metatable to be shared by all long numbers
+local mt = {}
+
 --=======================================================================
 -- healper functinos
 --=======================================================================
@@ -11,21 +14,15 @@ function is_num(char)
     return false
 end
 
-function long_num_to_string(num)
-    local str = ''
-    if not num.pos then
-        str = '-'
-    end
-
-    for i = 1, #num.values do
-        if i == num.decimal then
-            str = str .. '.'
-        end
-        str = str .. num.values[i]
-    end
-
-    return str
+--[[
+function get_define(key)
+    local defines = {
+        max_coin = 50
+    }
+    assert(defines[key], "define dosen't exist")
+    return defines[key]
 end
+]]
 
 -- how many value places come before the decimal
 function pre_decimal_value_places(num)
@@ -43,69 +40,67 @@ function is_int(num)
 end
 
 -- see which number is further from zero
-function furthest_from_zero(ln1, ln2)
+function furthest_from_zero(num1, num2)
     -- long number one's pre-decimal value places
-    local ln1_pre = pre_decimal_value_places(ln1)
+    local num1_pre = pre_decimal_value_places(num1)
     -- long number two's pre-decimal value places
-    local ln2_pre = pre_decimal_value_places(ln2)
+    local num2_pre = pre_decimal_value_places(num2)
 
     -- long number one's pos-decimal value places
-    local ln1_post = post_decimal_value_places(ln1)
+    local num1_post = post_decimal_value_places(num1)
     -- long number two's pos-decimal value places
-    local ln2_post = post_decimal_value_places(ln2)
+    local num2_post = post_decimal_value_places(num2)
 
     -- if the two nums don't have the same number of greater than ones value place
-    if ln1_pre != ln2_pre then
-        return ln1_pre > ln2_pre and 1 or 2
+    if num1_pre != num2_pre then
+        return num1_pre > num2_pre and 1 or 2
     else
         -- if the nums have the same number of greater than ones value place
         local i = 1
         -- compare all shared value places and see which one is greater
-        while i <= #ln1.values and i <= #ln2.values do
-            if ln1.values[i] != ln2.values[i] then
-                return ln1.values[i] > ln2.values[i] and 1 or 2
+        while i <= #num1.values and i <= #num2.values do
+            if num1.values[i] != num2.values[i] then
+                return num1.values[i] > num2.values[i] and 1 or 2
             end
             i += 1
         end
         -- if neither is greater
 
         -- if one number has more value places less than ones
-        if ln1_post != ln2_post then
-            return ln1_post > ln2_post and 1 or 2
+        if num1_post != num2_post then
+            return num1_post > num2_post and 1 or 2
         else
             return 0
         end
     end
 end
 
--- error check long number
+-- error check long number [think of adding , variable_name) for errors]
 function check_long_num(num)
     -- check variable
-    assert(type(num) != 'nil', "invalid input: inputed long\nnumber dosen't exist")
-    assert(type(num) == 'table', "invalid input: inputed long\nnumber is not a table")
+    err_check(type(num) != 'nil', "inputed long number dosen't exist", 1)
+    err_check(type(num) == 'table', "inputed long\nnumber is not a table", 1)
     -- check values
-    assert(type(num.values) != 'nil', "missing variable:\ninputed long number is missing a values\nvariable")
-    assert(type(num.values) == 'table', "incorrect variable:\ninputed long number's values\nvariable is not a table")
+    err_check(type(num.values) != 'nil', "inputed long number is missing a values\nvariable", 2)
+    err_check(type(num.values) == 'table', "inputed long number's values\nvariable is not a table", 3)
     -- check decimal
-    assert(type(num.decimal) != 'nil', "missing variable:\ninputed long number is missing\na decimal variable")
-    assert(type(num.decimal) == 'number', "incorrect variable:\ninputed long number's decimal\nvariable is not a number")
+    err_check(type(num.decimal) != 'nil', "inputed long number is missing\na decimal variable", 2)
+    err_check(type(num.decimal) == 'number', "inputed long number's decimal\nvariable is not a number", 3)
     -- check pos
-    assert(type(num.pos) != 'nil', "missing variable: inputed long\nnumber is missing a pos variable")
-    assert(type(num.pos) == 'boolean', "incorrect variable:\ninputed long number's pos\nvariable is not a boolean")
+    err_check(type(num.positive) != 'nil', "inputed long\nnumber is missing a positive variable", 2)
+    err_check(type(num.positive) == 'boolean', "inputed long number's pos\nvariable is not a boolean", 3)
 end
 
 --=======================================================================
--- constructor function
+-- constructor functions
 --=======================================================================
 
 -- given a string input make a struct that stores a number of any length
-function make_long_num(string)
-    local str = string or '0'
+function long_num(string)
+    -- check that variable string is a string
+    -- err_check()
 
-    -- make sure an empty string error dosen't occur
-    if str == '' then
-        str = '0'
-    end
+    local str = string or ''
 
     -- all the values place values
     local v = {}
@@ -120,19 +115,26 @@ function make_long_num(string)
     local zero_count = 0
     local decimal_buff = 0
 
-    if sub(str, 1, 1) == "-" then p = false end
+    -- make sure an empty string error dosen't occur
+    if str == '' then
+        v = { 0 }
+        goto returnNum
+    end
+
+    if (sub(str, 1, 1) == "-") p = false
     -- read all the numbers
     for i = p and 1 or 2, #str do
         local char = sub(str, i, i)
         -- check for a negative sign in the middle of the number
-        assert(char != '-', "invalid number input:\na negative sign in the middle\nof the number")
-        -- check for a second decimal
-        if d != 0 then assert(char != '.', "invalid number input:\nmultiple decimal places") end
+        err_check(char != '-', "invalid number input:\na negative sign in the middle\nof the number")
 
         -- deal with values place number
         if char == '.' then
+            -- check for a second decimal
+            if d != 0 then err_check(char != '.', "invalid number input:\nmultiple decimal places") end
             d = i - decimal_buff
             if not p then d -= 1 end
+            -- if the decimal place is the first character or comes right after the negative sign
             if #v == 0 then
                 if redundent_zeros then
                     redundent_zeros = false
@@ -141,6 +143,7 @@ function make_long_num(string)
                     leading_zero = true
                 end
             else
+                -- if the decimal place is not the first character
                 if redundent_zeros then redundent_zeros = false end
                 -- add that many zeros to the list
                 for i = 1, zero_count do
@@ -149,7 +152,7 @@ function make_long_num(string)
                 zero_count = 0
             end
         else
-            assert(is_num(char), 'invalid number input:\ninput contains a non-number character')
+            err_check(is_num(char), 'invalid number input:\ninput contains a non-number character')
             -- track the consecutive number of zeros
             if char == '0' then
                 zero_count += 1
@@ -183,11 +186,10 @@ function make_long_num(string)
 
     -- if there's no values then set it to an empty 0
     if #v == 0 then
-        return {
-            values = { 0 },
-            decimal = 0,
-            pos = true
-        }
+        v = { 0 }
+        d = 0
+        p = true
+        goto returnNum
     end
 
     -- if never reached under the ones value place
@@ -199,47 +201,62 @@ function make_long_num(string)
     end
 
     -- if the decimal place is at the end then there isn't a decimal place
-    if #v + 1 == d then d = 0 end
-
-    return {
+    if (#v + 1 == d) d = 0
+    -- returning the long number
+    ::returnNum::
+    local num = {
         values = v,
         decimal = d,
-        pos = p
+        positive = p
     }
+
+    setmetatable(num, mt)
+    return num
 end
 
+--=======================================================================
 -- math functions
+--=======================================================================
 
 -- adding together two long numbers
-function add_long_nums(ln1, ln2)
-    -- long number one's pre-decimal value places
-    local ln1_pre = pre_decimal_value_places(ln1)
-    -- long number two's pre-decimal value places
-    local ln2_pre = pre_decimal_value_places(ln2)
+function mt.__add(a, b)
+    local num1 = a
+    local num2 = b
 
-    local greater_num = furthest_from_zero(ln1, ln2)
+    if type(num1) == 'number' then
+        num1 = long_num(tostr(num1))
+    elseif type(num2) == 'number' then
+        num2 = long_num(tostr(num2))
+    end
+
+    -- long number one's pre-decimal value places
+    local num1_pre = pre_decimal_value_places(num1)
+    -- long number two's pre-decimal value places
+    local num2_pre = pre_decimal_value_places(num2)
+
+    local greater_num = furthest_from_zero(num1, num2)
 
     -- if the two nums don't have the same positivity
-    if ln1.pos != ln2.pos then
+    if num1.positive != num2.positive then
         if greater_num == 0 then
             return {
                 values = { 0 },
                 decimal = 0,
-                pos = true
+                positive = true
             }
         end
     end
 
     -- the greater one will subtract the lesser one if it's subtraction
-    local greater = greater_num == 1 and ln1 or ln2
-    local lesser = greater_num == 1 and ln2 or ln1
+    local greater = greater_num == 1 and num1 or num2
+    local lesser = greater_num == 1 and num2 or num1
 
     -- all the value places that need to be traversed
-    local max_val_place = max(ln1_pre, ln2_pre)
-            + max(post_decimal_value_places(ln1), post_decimal_value_places(ln2))
+    local max_val_place = max(num1_pre, num2_pre)
+            + max(post_decimal_value_places(num1), post_decimal_value_places(num2))
 
-    -- the difference between the start of ln1 and ln2
-    local pre_diff = max(ln1_pre - ln2_pre, ln2_pre - ln1_pre)
+    -- the difference between the start of num1 and num2
+    local pre_diff = max(num1_pre - num2_pre, num2_pre - num1_pre)
 
     -- the result string
     local result = ''
@@ -252,7 +269,7 @@ function add_long_nums(ln1, ln2)
         -- add the value places together
         local sum = (greater.values[i] or 0)
                 + (lesser.values[i - pre_diff] or 0)
-                * (ln1.pos == ln2.pos and 1 or -1) + carry
+                * (num1.positive == num2.positive and 1 or -1) + carry
 
         -- record the value
         result = sum % 10 .. result
@@ -265,12 +282,21 @@ function add_long_nums(ln1, ln2)
         end
     end
 
-    if not greater.pos then result = '-' .. result end
+    if not greater.positive then result = '-' .. result end
 
-    return make_long_num(result)
+    return long_num(result)
 end
 
-function multiply_long_nums(num1, num2)
+function mt.__mul(a, b)
+    local num1 = a
+    local num2 = b
+
+    if type(num1) == 'number' then
+        num1 = long_num(tostr(num1))
+    elseif type(num2) == 'number' then
+        num2 = long_num(tostr(num2))
+    end
+
     -- for optimization table access overhead
     local num1_vals = num1.values
     local num2_vals = num2.values
@@ -307,16 +333,40 @@ function multiply_long_nums(num1, num2)
         v[i] = temp
     end
 
+    -- account for no carry over at the front of the number
+    if (v[1] == 0) deli(v, 1)
+    -- calculate the decimal position
     local total_post_dist = post_decimal_value_places(num1) + post_decimal_value_places(num2)
     local d = total_post_dist == 0 and 0 or #v - total_post_dist + 1
 
-    return {
+    local result = {
         values = v,
         decimal = d,
-        pos = num1.pos == num2.pos
+        positive = num1.positive == num2.positive
     }
+
+    -- set the meta table for long numbers to the result
+    setmetatable(result, mt)
+
+    return result
 end
 
+function mt.__pow(a, b)
+    print('' .. a .. " ^ " .. b .. " =")
+
+    assert(type(b) == 'number', 'That is not supported at the current moment')
+
+    if (b == 0) return 1
+    local result = a
+
+    for i = 2, b do
+        result = result * a
+    end
+
+    return result
+end
+
+--[[
 -- at give value_place, round the number num up
 function round_up_long_num(num, value_place)
     local index = num.decimal - value_place + 1
@@ -336,14 +386,94 @@ function round_up_long_num(num, value_place)
     end
     -- remove all places below the rounding place
     for i = index, #num.values do
-        --[[
-        if then
-        else
-        num.values[i] = nil
-        end
-        ]]
+
     end
     return num
+end
+]]
+
+--=======================================================================
+-- comparitor functions
+--=======================================================================
+
+-- a == b
+function mt.__eq(a, b)
+    local num1 = a
+    local num2 = b
+
+    if type(num1) == 'number' then
+        num1 = long_num(tostr(num1))
+    elseif type(num2) == 'number' then
+        num2 = long_num(tostr(num2))
+    end
+
+    if (num1.positive != num2.positive) return false
+    return furthest_from_zero(num1, num2) == 0
+end
+
+-- a < b
+function mt.__lt(a, b)
+    local num1 = a
+    local num2 = b
+
+    if type(num1) == 'number' then
+        num1 = long_num(tostr(num1))
+    elseif type(num2) == 'number' then
+        num2 = long_num(tostr(num2))
+    end
+
+    -- if one's negative and the others postitive
+    -- if b is true meaning it's positive then a < b would be true as b would be positve and a, negative
+    -- otherwise if b was false meaning it's negative then vice versa so the truth of this statment really just matches the positivity of num2
+    if (num1.positive != num2.positive) return num2.positive
+    -- which number has a further distance from zero
+    local furthest = furthest_from_zero(num1, num2)
+
+    -- if they are the same distance from 0
+    if (furthest == 0) return false
+    if num1.positive then
+        -- if it's positive numbers then the lesser number would be the one closest to 0
+        if furthest == 1 then
+            -- this means a is further than b
+            return false
+        else
+            -- this means b is further than a
+            return true
+        end
+    else
+        -- if it's negative numbers then the lesser number would be the one furthest to 0
+        if furthest == 1 then
+            -- this means a is further than b
+            return true
+        else
+            -- this means b is further than a
+            return false
+        end
+    end
+end
+
+--=======================================================================
+-- string functions
+--=======================================================================
+
+function mt.__tostring(num)
+    local str = ''
+    if not num.positive then
+        str = '-'
+    end
+
+    for i = 1, #num.values do
+        if i == num.decimal then
+            str = str .. '.'
+        end
+        str = str .. num.values[i]
+    end
+
+    return str
+end
+
+function mt.__concat(a, b)
+    return tostr(a) .. tostr(b)
 end
 
 --=======================================================================
@@ -375,7 +505,7 @@ end
       k = the number of generators currently owned
   ]]
 function cost_next(b, r, k)
-    return b * pow(r, k)
+    return b * r ^ k
 end
 
 --[[
@@ -398,7 +528,7 @@ end
       k = the number of generators currently owned
   ]]
 function bulk_buy_cost(b, r, k, n)
-    return b * pow(r, k) * (pow(r, n) - 1) / (r - 1)
+    return b * r ^ k * (r ^ n - 1) / (r - 1)
 end
 
 --[[
@@ -409,5 +539,29 @@ end
       c = the amount of currency owned
   ]]
 function max_buy_ammount(b, r, k, c)
-    return flr(ln(c * (r - 1) / b * pow(r, k) + 1) / ln(r))
+    return flr(ln(c * (r - 1) / b * r ^ k + 1) / ln(r))
+end
+
+function err_check(condition, string, err_type)
+    local err_types = {
+        'invalid input',
+        'missing variable',
+        'incorrect variable type'
+    }
+    local msg = 'check err.txt for full details'
+    local divider = '===========================================================================\n'
+    --[[
+    if err_type and err_type > 0 and err_type <= #err_types then
+        -- the detailed plain text information
+        string = divider
+                .. err_types[err_type] .. ":\n" .. string .. '\n' .. divider
+        -- the assert message
+        msg = '[' .. err_types[err_type] .. "]\n" .. msg
+    else
+        string = '' .. divider .. string .. '\n' .. divider
+    end
+    ]]
+
+    printh(string, "err.txt", true)
+    assert(condition, msg)
 end
