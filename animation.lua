@@ -10,7 +10,10 @@ rightmost_ground_x = 128
 
 -- table to hold ground sprites
 ground = {}
+-- table to hold sky sprites
 sky = {}
+-- table to hold chat sprites
+chat = {}
 
 -- Function to generate frames
 function generate_frames(start, count)
@@ -32,11 +35,18 @@ character_table = {
 -- all tables spawn by index and must be in the same order to maintain theme consistency
 ground_start_frames = {120, 152, 168, 136, 184}
 ground_names = {"grass", "ds_ground", "watermelon", "graveyard", "space"}
-
 ground_table = {}
 for i, start_frame in ipairs(ground_start_frames) do
     ground_table[i] = {name = ground_names[i], frames = generate_frames(start_frame, 7)}
 end
+
+-- all tables spawn by index and must be in the same order to maintain theme consistency
+-- working chat stuff
+chat_frames = {80, 81, 82, 83, 84, 85, 86, 87}
+
+
+-- make chat head table
+chat_table = {frames = chat_frames}
 
 -- all tables spawn by index and must be in the same order to maintain theme consistency
 sky_table = {}
