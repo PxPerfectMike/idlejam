@@ -103,9 +103,7 @@ function make_long_num(string)
     local str = string or '0'
 
     -- make sure an empty string error dosen't occur
-    if str == '' then
-        str = '0'
-    end
+    if (str == '') str = '0'
 
     -- all the values place values
     local v = {}
@@ -120,7 +118,7 @@ function make_long_num(string)
     local zero_count = 0
     local decimal_buff = 0
 
-    if sub(str, 1, 1) == "-" then p = false end
+    if (sub(str, 1, 1) == "-") p = false
     -- read all the numbers
     for i = p and 1 or 2, #str do
         local char = sub(str, i, i)
@@ -199,7 +197,7 @@ function make_long_num(string)
     end
 
     -- if the decimal place is at the end then there isn't a decimal place
-    if #v + 1 == d then d = 0 end
+    if (#v + 1 == d) d = 0
 
     return {
         values = v,

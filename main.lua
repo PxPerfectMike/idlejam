@@ -1,10 +1,41 @@
-mathtest = true;
+mathtest = true
+
+-- pico state hooks
+State = {
+    _state = {},
+    set_state_self_inner = function (self, name, value)
+        self._state[name] = value
+    end
+}
+
+function set_state(name, value)
+    State:set_state_self_inner(name, value)
+end
+
+function get_state(name)
+    return State._state[name]
+end
+
+set_state("test_int", 1)
+test = get_state("test_int")
+
+set_state("test_float", 4.2)
+test2 = get_state("test_float")
+
+set_state("test_string", "hello")
+test3 = get_state("test_string")
+
+set_state("test_bool", true)
+test4 = get_state("test_bool")
+
+set_state("test_int", 5)
+test5 = get_state("test_int")
 
 function _init()
     if not mathtest then
-    cls()
-    sky_speed = 0.3  -- initial sky speed
-    palt(14, true) -- pink color as transparency is true
+        cls()
+        sky_speed = 0.3  -- initial sky speed
+        palt(14, true) -- pink color as transparency is true
     palt(0, false) -- black color as transparency is false
 
     -- initialize ground with enough sprites to fill the screen
@@ -77,8 +108,16 @@ else
 
     print(long_num_to_string(stress_test))
     print("it has " .. #stress_test.values .. " value places")
+    
+    
+    print("get_test 1 ->" .. test)
+    print("get_test 2 ->" .. test2)
+    print("get_test 3 ->" .. test3)
+    print(test4)
+    print(test5)
 end
 end
+
 
 function _update()
     if not mathtest then
