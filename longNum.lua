@@ -386,7 +386,7 @@ function total_production(_production_base, _owned, _multipliers)
 end
 
 --[[
-      find how much it costs to buy in bulk ammount
+      find how much it costs to buy in bulk amount
       n = the number of generators to buy
       b = the base price
       r = the price growth rate exponent
@@ -397,12 +397,12 @@ function bulk_buy_cost(b, r, k, n)
 end
 
 --[[
-      what is the maximum ammount of units you can buy
+      what is the maximum amount of units you can buy
       b = the base price
       r = the price growth rate exponent
       k = the number of generators currently owned
       c = the amount of currency owned
   ]]
-function max_buy_ammount(b, r, k, c)
+function max_buy_amount(b, r, k, c)
     return flr(ln(c * (r - 1) / b * pow(r, k) + 1) / ln(r))
 end
