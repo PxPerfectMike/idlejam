@@ -104,7 +104,6 @@ function make_long_num(string)
 
     -- make sure an empty string error dosen't occur
     if (str == '') str = '0'
-
     -- all the values place values
     local v = {}
     -- where the decimal starts
@@ -198,7 +197,6 @@ function make_long_num(string)
 
     -- if the decimal place is at the end then there isn't a decimal place
     if (#v + 1 == d) d = 0
-
     return {
         values = v,
         decimal = d,
@@ -254,6 +252,7 @@ function add_long_nums(ln1, ln2)
 
         -- record the value
         result = sum % 10 .. result
+
         -- find the carry over
         carry = flr(sum / 10)
 
@@ -311,7 +310,6 @@ function multiply_long_nums(num1, num2)
     }
 end
 
-
 -- at give value_place, round the number num up
 function round_up_long_num(num, value_place)
     local index = num.decimal - value_place + 1
@@ -359,6 +357,7 @@ end
     b = the base price
     r = the price growth rate exponent
 ]]
+
 function cost_next(b, r)
     return b * r
 end
