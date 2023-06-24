@@ -5,102 +5,65 @@ __lua__
 #include main.lua
 #include animation.lua
 #include longNum.lua
-#include defines.lua
+#include idlemath.lua
+
+local lmb_pressed = false
+
+local test_level
+local timer = 0
+local base_time = 2
+local rand_time = rnd(1)
 
 function _init()
-    print("ln(1) = " .. ln(1))
-    print("ln(e) = " .. ln(2.71828))
-    -- should be close to 1
-    print("ln(54) = " .. ln(54))
+    -- enable mouse and buttons (0x5f2d, lmb, rmb)
+    poke(0x5f2d, 0x1, 0x2)
 
-    --print("ln(54) = " .. newtonRaphsonLog(54))
+    test_level = level:new({
+        threshold_count = 20,
+        click_threshold = 3,
 
-    print("2^5 = " .. 2 ^ 5)
+        tas_max = 20,
+        tas_benefit = 1,
 
-    print("cost next: 4 x (1.07)^10 = " .. cost_next(4, 1.07, 10))
-    print("production total:\n(1.67 x 10) x 1 = " .. total_production(1.67, 10, 1))
-
-    local ammount = max_buy_ammount(4, 1.07, 1, 100)
-    local cost = bulk_buy_cost(4, 1.07, 1, ammount)
-    print("maximum can by with 100 is " .. ammount)
-    print("which is equal to " .. cost)
-
-    local float = 12345.6789
-
-    print("float: " .. float)
-
-    local double = long_num('-1200.1000000')
-    --local str = long_num_to_string(double)
-    print(double)
-    local num = 123.456789123
-    print(tostr(num))
-
-    local double3 = long_num("-12059901.01")
-    local double4 = long_num("-12059901.09")
-    local double5 = print('' .. double3 .. ' + ' .. double4 .. ' =\n' .. double3 + double4)
-
-    local double6 = double5 + 0.003
-
-    print(double6)
-
-    -- print(long_num("-1.2") * long_num("-1.2"))
-
-    local a = long_num("12345.6789")
-    local b = long_num("12345.6789")
-    local c = a * a * a
-    --local c = a ^ 2
-    print(a ^ 3 == c)
-
-    --print(type(double3 + double4))
-
-    --[[
-    local double2 = long_num("-120599.00001")
-    print(long_num_to_string(double2))
-
-    --add_long_nums(double, double2)
-
-    local double3 = long_num("-12059901.01")
-    local double4 = long_num("-12059901.09")
-
-    print('' .. long_num_to_string(double3) .. ' + ' .. long_num_to_string(double4) .. ' = ')
-
-    print(long_num_to_string(add_long_nums(double3, double4)))
-
-    print("stress test add long nums:")
-    print("start stress test")
-    add_long_nums(long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"), long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"))
-    print("stress test done")
-
-    local double5 = long_num("999.999")
-    local double6 = long_num("999.999")
-
-    print('' .. long_num_to_string(double5) .. ' x ' .. long_num_to_string(double6) .. ' = ')
-    print(long_num_to_string(multiply_long_nums(double5, double6)))
-
-    print("stress test multiply long nums:")
-    print("start stress test")
-    local stress_test = multiply_long_nums(long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"), long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"))
-    print("stress test done")
-
-    print(long_num_to_string(stress_test))
-    print("it has " .. #stress_test.values .. " value places")
-
-    --err_check(false, "test", 1)
-    add_define("max_coin", 50)
-    add_define("max_coin", 100)
-    print(get_define("max_coin"))
-
-    add_define("test var", true)
-    print(get_define("test var"))
-
-    --print(get_define("max_coins"))
-    ]]
+        viewer_interest = 1,
+        viewer_flux_range = 2
+    })
+    set_tas_machines(6)
 end
 
 function _update()
+    local _dt = 1 / stat(7)
+    local update_time = base_time + rand_time
+    -- basically unity's key_trigger
+    if stat(34) == 1 and not lmb_pressed then
+        test_level:clicked()
+        lmb_pressed = true
+    end
+    if stat(34) == 0 and lmb_pressed then
+        lmb_pressed = false
+    end
+
+    test_level:find_speed()
+
+    if timer >= update_time then
+        test_level:find_viewers()
+        timer -= update_time
+        -- set the randomized time
+        rand_time = rnd(1)
+    end
+
+    test_level:update(_dt)
+
+    -- update timer
+    timer += _dt
 end
 
 function _draw()
+    cls(2)
+    print(stat(34), 0, 0, 7)
+    print('click value: ' .. get_click_val(), 0, 6, 7)
+    print('speed level: ' .. get_speed_level(), 0, 6 * 2, 7)
+    print('viewers: ' .. get_viwers(), 0, 6 * 3, 7)
 end
 
 __gfx__

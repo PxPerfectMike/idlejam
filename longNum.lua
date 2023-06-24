@@ -1,8 +1,8 @@
 -- a metatable to be shared by all long numbers
-local mt = {}
+local _long_num = {}
 
 --=======================================================================
--- healper functinos
+-- helper functions
 --=======================================================================
 
 -- checks if a character is a number
@@ -13,16 +13,6 @@ function is_num(char)
     end
     return false
 end
-
---[[
-function get_define(key)
-    local defines = {
-        max_coin = 50
-    }
-    assert(defines[key], "define dosen't exist")
-    return defines[key]
-end
-]]
 
 -- how many value places come before the decimal
 function pre_decimal_value_places(num)
@@ -210,7 +200,7 @@ function long_num(string)
         positive = p
     }
 
-    setmetatable(num, mt)
+    setmetatable(num, _long_num)
     return num
 end
 
@@ -219,7 +209,7 @@ end
 --=======================================================================
 
 -- adding together two long numbers
-function mt.__add(a, b)
+function _long_num.__add(a, b)
     local num1 = a
     local num2 = b
 
@@ -287,7 +277,7 @@ function mt.__add(a, b)
     return long_num(result)
 end
 
-function mt.__mul(a, b)
+function _long_num.__mul(a, b)
     local num1 = a
     local num2 = b
 
@@ -346,15 +336,15 @@ function mt.__mul(a, b)
     }
 
     -- set the meta table for long numbers to the result
-    setmetatable(result, mt)
+    setmetatable(result, _long_num)
 
     return result
 end
 
-function mt.__pow(a, b)
-    print('' .. a .. " ^ " .. b .. " =")
-
+function _long_num.__pow(a, b)
     assert(type(b) == 'number', 'That is not supported at the current moment')
+
+    assert(long_num(tostr(b)).decimal == 0, 'only whole number supported at the current moment')
 
     if (b == 0) return 1
     local result = a
@@ -364,6 +354,11 @@ function mt.__pow(a, b)
     end
 
     return result
+end
+
+-- floors a long num
+function long_flr(a)
+    -- check that a is a long num
 end
 
 --[[
@@ -397,7 +392,7 @@ end
 --=======================================================================
 
 -- a == b
-function mt.__eq(a, b)
+function _long_num.__eq(a, b)
     local num1 = a
     local num2 = b
 
@@ -412,7 +407,7 @@ function mt.__eq(a, b)
 end
 
 -- a < b
-function mt.__lt(a, b)
+function _long_num.__lt(a, b)
     local num1 = a
     local num2 = b
 
@@ -456,7 +451,7 @@ end
 -- string functions
 --=======================================================================
 
-function mt.__tostring(num)
+function _long_num.__tostring(num)
     local str = ''
     if not num.positive then
         str = '-'
@@ -472,7 +467,7 @@ function mt.__tostring(num)
     return str
 end
 
-function mt.__concat(a, b)
+function _long_num.__concat(a, b)
     return tostr(a) .. tostr(b)
 end
 
@@ -490,22 +485,14 @@ end
 
 -- credit for the equations goes to Anthony Percorella, "The Math of Idle Games, Part 1", Kongregate Developers Blog
 --[[
-    find how much the next upgrade cost
-    b = the base price
-    r = the price growth rate exponent
-]]
-function cost_next(b, r)
-    return b * r
-end
-
---[[
       find how much the next upgrade cost
       b = the base price
       r = the price growth rate exponent
       k = the number of generators currently owned
   ]]
+
 function cost_next(b, r, k)
-    return b * r ^ k
+    return b * r ^ (k or 1)
 end
 
 --[[
