@@ -12,12 +12,6 @@ rightmost_ground_x = 128
 ground = {}
 -- table to hold sky sprites
 sky = {}
--- table to hold chat sprites
-chat = {}
-
-function delete_last_chat()
-    del(chat, 1)
-end
 
 -- Function to generate frames
 function generate_frames(start, count)
@@ -45,12 +39,7 @@ for i, start_frame in ipairs(ground_start_frames) do
 end
 
 -- all tables spawn by index and must be in the same order to maintain theme consistency
--- working chat stuff
-chat_frames = {80, 81, 82, 83, 84, 85, 86, 87}
 
-
--- make chat head table
-chat_table = {frames = chat_frames}
 
 -- all tables spawn by index and must be in the same order to maintain theme consistency
 sky_table = {}

@@ -3,13 +3,23 @@ mathtest = false
 -- chat variables
 chat_spawn_timer = 0
 chat_spawn_interval = 1 -- in seconds
-chat_spawn_chance = 0.9 -- percentage chance to spawn a chat
+chat_spawn_chance = 0.2 -- percentage chance to spawn a chat
 max_chat_count = 14
+-- table to hold chat sprites
+chat_entities = {}
 function move_chat_down()
-    for i, c in pairs(chat) do
-        c.y += 8 -- adjust this value to control how much sprites move down
+    for i, entity in pairs(chat_entities) do
+        entity.chat.y += 8 -- adjust this value to control how much sprites move down
+        entity.message.y += 8 -- adjust this value to control how much messages move down
     end
 end
+-- working chat stuff
+chat_frames = { 80, 81, 82, 83, 84, 85, 86, 87 }
+chat_messages = { 208, 211 }
+
+-- make chat head table
+chat_table = { frames = chat_frames }
+chat_message_table = { frames = chat_messages }
 
 -- pico state hooks
 State = {
@@ -68,17 +78,19 @@ function _update()
     if chat_spawn_timer >= chat_spawn_interval then
         -- Reset timer
         chat_spawn_timer = 0
-        
+
         -- Remove chat sprite at the bottom
-        if #chat == 14 then
-            del(chat, chat[1])
+        if #chat_entities == max_chat_count then
+            del(chat_entities, chat_entities[1])
         end
         -- Chance to spawn a new chat sprite
-        if rnd() < chat_spawn_chance and #chat < max_chat_count then
+        if rnd() < chat_spawn_chance and #chat_entities < max_chat_count then
             -- Move existing chat sprites down
             move_chat_down()
-            -- Spawn new chat sprite at the top
-            add(chat, { x = 97, y = 26, frame = chat_table.frames[flr(rnd(#chat_table.frames)) + 1] })
+            -- Spawn new chat sprite and message at the top
+            local chat_frame = chat_table.frames[flr(rnd(#chat_table.frames)) + 1]
+            local message_frame = chat_message_table.frames[flr(rnd(#chat_message_table.frames)) + 1]
+            add(chat_entities, { chat = { x = 97, y = 26, frame = chat_frame }, message = { x = 105, y = 26, frame = message_frame } })
         end
     end
 end
@@ -110,10 +122,11 @@ function _draw()
             end
         end
 
-        rectfill(96, 25, 128, 128, 6) -- right bar
+        rectfill(96, 25, 128, 128, 5) -- right bar
         -- -- draw chat sprites
-        for i, c in pairs(chat) do
-            spr(c.frame, c.x, c.y, 1, 1)
+        for i, entity in pairs(chat_entities) do
+            spr(entity.chat.frame, entity.chat.x, entity.chat.y, 1, 1)
+            spr(entity.message.frame, entity.message.x, entity.message.y, 3, 1)
         end
 
         rectfill(0, 0, 128, 25, 13) -- top bar

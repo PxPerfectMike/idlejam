@@ -52,10 +52,4 @@ function run_tests()
 
     print(long_num_to_string(stress_test))
     print("it has " .. #stress_test.values .. " value places")
-
-    print("get_test 1 ->" .. test)
-    print("get_test 2 ->" .. test2)
-    print("get_test 3 ->" .. test3)
-    print(test4)
-    print(test5)
 end
