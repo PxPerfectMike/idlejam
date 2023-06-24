@@ -4,7 +4,7 @@ mathtest = false
 chat_spawn_timer = 0
 chat_spawn_interval = 1 -- in seconds
 chat_spawn_chance = 0.9 -- percentage chance to spawn a chat
-max_chat_count = 13
+max_chat_count = 14
 function move_chat_down()
     for i, c in pairs(chat) do
         c.y += 8 -- adjust this value to control how much sprites move down
@@ -26,21 +26,6 @@ end
 function get_state(name)
     return State._state[name]
 end
-
-set_state("test_int", 1)
-test = get_state("test_int")
-
-set_state("test_float", 4.2)
-test2 = get_state("test_float")
-
-set_state("test_string", "hello")
-test3 = get_state("test_string")
-
-set_state("test_bool", true)
-test4 = get_state("test_bool")
-
-set_state("test_int", 5)
-test5 = get_state("test_int")
 
 function _init()
     if not mathtest then
@@ -83,12 +68,15 @@ function _update()
     if chat_spawn_timer >= chat_spawn_interval then
         -- Reset timer
         chat_spawn_timer = 0
-
+        
+        -- Remove chat sprite at the bottom
+        if #chat == 14 then
+            del(chat, chat[1])
+        end
         -- Chance to spawn a new chat sprite
         if rnd() < chat_spawn_chance and #chat < max_chat_count then
             -- Move existing chat sprites down
             move_chat_down()
-
             -- Spawn new chat sprite at the top
             add(chat, { x = 97, y = 26, frame = chat_table.frames[flr(rnd(#chat_table.frames)) + 1] })
         end

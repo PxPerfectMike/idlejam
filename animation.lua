@@ -15,6 +15,10 @@ sky = {}
 -- table to hold chat sprites
 chat = {}
 
+function delete_last_chat()
+    del(chat, 1)
+end
+
 -- Function to generate frames
 function generate_frames(start, count)
     local frames = {}
