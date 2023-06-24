@@ -6,6 +6,8 @@ __lua__
 #include animation.lua
 #include longNum.lua
 
+#include tests.lua
+
 __gfx__
 eeeeeeee111111112222222233333333444444445555555566666666777777778888888899999999aaaaaaaabbbbbbbbccccccccddddddddffffffffeeeeeeee
 eeeeeeee111111112222222233333333444444445555555566666666777777778888888899999999aaaaaaaabbbbbbbbccccccccddddddddffffffffeeeeeeee
