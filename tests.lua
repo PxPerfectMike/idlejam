@@ -8,13 +8,13 @@ function run_tests()
 
     print("2^5 = " .. pow(2, 5))
 
-    print("cost next: 4 x (1.07)^10 = " .. cost_next(4, 1.07, 10))
-    print("production total:\n(1.67 x 10) x 1 = " .. total_production(1.67, 10, 1))
+    -- print("cost next: 4 x (1.07)^10 = " .. cost_next(4, 1.07, 10))
+    -- print("production total:\n(1.67 x 10) x 1 = " .. total_production(1.67, 10, 1))
 
-    local amount = max_buy_amount(4, 1.07, 1, 100)
-    local cost = bulk_buy_cost(4, 1.07, 1, amount)
-    print("maximum can by with 100 is " .. amount)
-    print("which is equal to " .. cost)
+    -- local amount = max_buy_amount(4, 1.07, 1, 100)
+    -- local cost = bulk_buy_cost(4, 1.07, 1, amount)
+    -- print("maximum can by with 100 is " .. amount)
+    -- print("which is equal to " .. cost)
 
     local float = 12345.6789
 
