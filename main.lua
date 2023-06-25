@@ -5,6 +5,7 @@ chat_spawn_timer = 0
 chat_spawn_interval = 1 -- in seconds
 chat_spawn_chance = 0.2 -- percentage chance to spawn a chat
 max_chat_count = 14
+
 -- table to hold chat sprites
 chat_entities = {}
 function move_chat_down()
@@ -13,9 +14,10 @@ function move_chat_down()
         entity.message.y += 8 -- adjust this value to control how much messages move down
     end
 end
+
 -- working chat stuff
 chat_frames = { 80, 81, 82, 83, 84, 85, 86, 87 }
-chat_messages = { 208, 211 }
+chat_messages = { 232, 235 }
 
 -- make chat head table
 chat_table = { frames = chat_frames }
@@ -38,6 +40,8 @@ function get_state(name)
 end
 
 function _init()
+    bg_transition_needed = true
+
     if not mathtest then
         cls()
         sky_speed = 0.3 -- initial sky speed
@@ -63,12 +67,57 @@ function _init()
     end
 end
 
+function change_bg_color(old_color, new_color, startX, startY, endX, endY)
+    for y = startY, endY do
+        for x = startX, endX do
+            local pixel_color = sget(x, y)
+            if pixel_color == old_color then
+                sset(x, y, new_color)
+            end
+        end
+    end
+end
+
+function bg_transition()
+    -- Return immediately if no transition is needed
+    if not bg_transition_needed then
+        return
+    end
+
+
+    -- Change the background color based on the level (current color, new color, start x, start y, end x, end y)
+    if level == 2 then 
+        change_bg_color(12, 13, 0, 48, 63, 104)
+        change_bg_color(6, 5, 0, 48, 63, 104)
+        change_bg_color(1, 8, 0, 48, 63, 104)
+    end
+
+    if level == 3 then
+        change_bg_color(13, 11, 0, 48, 63, 104)
+        change_bg_color(5, 10, 0, 48, 63, 104)
+        change_bg_color(1, 8, 0, 48, 63, 104)
+    end
+
+    -- Reset the flag
+    bg_transition_needed = false
+end
+
+prev_level = 1 -- Initialize this with your initial level
+
 function _update()
     if not mathtest then
         character_switch()
         speed_switch()
         animation(character_table[level].frames, speed)
     end
+
+    if level ~= prev_level then
+        -- Indicate that a background transition is needed
+        bg_transition_needed = true
+        prev_level = level
+    end
+
+    bg_transition()
 
     -- Increase timer by frame duration
     chat_spawn_timer += 1 / 30
