@@ -2,39 +2,45 @@ pico-8 cartridge // http://www.pico-8.com
 version 38
 __lua__
 
-#include main.lua
 #include animation.lua
 #include longNum.lua
+#include timers.lua
 #include idlemath.lua
+#include main.lua
 
 local lmb_pressed = false
 
 local test_level
-local timer = 0
-local base_time = 2
-local rand_time = rnd(1)
 
 function _init()
     -- enable mouse and buttons (0x5f2d, lmb, rmb)
     poke(0x5f2d, 0x1, 0x2)
 
+    timers:add('click_decay', 0, click_decay_interval)
+
+    timers:add('update_viewers', 0, 4, 1)
+    timers:add('incrament_viewers', 0.5, 0.5)
+    timers:add('donation_time', 0, 20, 5)
+    timers:add('sub_time', 0, 1)
+
     test_level = level:new({
-        threshold_count = 20,
-        click_threshold = 3,
-
-        tas_max = 20,
-        tas_benefit = 1,
-
-        viewer_interest = 1,
-        viewer_flux_range = 2
+        click_threshold = 3
     })
-    set_tas_machines(6)
+
+    timers:start('update_viewers')
+    timers:start('donation_time')
+    timers:start('sub_time')
+    tas_machines = 6
+    test_level:find_speed()
+    test_level:find_viewers()
 end
 
 function _update()
+    cls(2)
     local _dt = 1 / stat(7)
-    local update_time = base_time + rand_time
+
     -- basically unity's key_trigger
+
     if stat(34) == 1 and not lmb_pressed then
         test_level:clicked()
         lmb_pressed = true
@@ -45,25 +51,38 @@ function _update()
 
     test_level:find_speed()
 
-    if timer >= update_time then
+    -- timed function
+    if timers:reached_target('update_viewers') then
         test_level:find_viewers()
-        timer -= update_time
-        -- set the randomized time
-        rand_time = rnd(1)
     end
 
-    test_level:update(_dt)
+    test_level:update()
 
-    -- update timer
-    timer += _dt
+    -- update timers
+    timers:update(_dt)
 end
 
 function _draw()
-    cls(2)
+    --timers:reached_target()
+
     print(stat(34), 0, 0, 7)
-    print('click value: ' .. get_click_val(), 0, 6, 7)
-    print('speed level: ' .. get_speed_level(), 0, 6 * 2, 7)
-    print('viewers: ' .. get_viwers(), 0, 6 * 3, 7)
+    print('click value: ' .. click_val, 0, 6, 7)
+    print('tash machines: ' .. tas_machines .. ' x ' .. test_level.tas_benefit)
+    print('cpus: ' .. cpus .. ' x ' .. test_level.cpu_benefit)
+
+    print('speed level: ' .. speed_level)
+    print('viewers: ' .. curr_viewers)
+    print('displayed viewers: ' .. displayed_viewers)
+    print('chance: ' .. chance)
+    print('sub val: ' .. base_val + idle_sub_buff)
+    print('idle subs: ' .. test_level.idle_subs)
+    print('subscribers: ' .. sub_count)
+    print('\nmoney: ' .. money)
+    print('\n[timers]:')
+    for i = 1, #timers.names do
+        local t_name = timers.names[i]
+        print('' .. t_name .. ': ' .. timers.time[t_name] .. ', ' .. timers.target[t_name])
+    end
 end
 
 __gfx__

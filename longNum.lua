@@ -272,6 +272,13 @@ function _long_num.__add(a, b)
         end
     end
 
+    while carry > 0 do
+        -- record the value
+        result = carry % 10 .. result
+        -- find the carry over
+        carry = flr(carry / 10)
+    end
+
     if not greater.positive then result = '-' .. result end
 
     return long_num(result)
@@ -357,8 +364,29 @@ function _long_num.__pow(a, b)
 end
 
 -- floors a long num
-function long_flr(a)
-    -- check that a is a long num
+function long_flr(num)
+    -- check that num is a long num
+
+    if num.decimal == 0 then
+        return num
+    end
+
+    local v = {}
+
+    for i = 1, num.decimal - 1 do
+        add(v, num.values[i])
+    end
+
+    local result = {
+        values = v,
+        decimal = 0,
+        positive = num.positive
+    }
+
+    -- set the meta table for long numbers to the result
+    setmetatable(result, _long_num)
+
+    return result
 end
 
 --[[
