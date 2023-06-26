@@ -10,17 +10,6 @@ __lua__
 #include main.lua
 #include testlevels.lua
 
-function _init()
-    --tl_init()
-end
-
-function _update()
-    --tl_update()
-end
-
-function _draw()
-    --tl_draw()
-end
 
 __gfx__
 eeeeeeee111111112222222233333333444444445555555566666666777777778888888899999999aaaaaaaabbbbbbbbccccccccddddddddffffffffeeeeeeee
