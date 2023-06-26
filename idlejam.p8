@@ -7,11 +7,11 @@ __lua__
 #include timers.lua
 #include keyboardinput.lua
 
-#include main.lua
-#include animation.lua
-
 #include idlemath.lua
 #include testlevels.lua
+
+#include animation.lua
+#include main.lua
 
 --[[
 function _init()

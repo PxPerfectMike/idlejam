@@ -22,8 +22,6 @@ function tl_init()
     -- enable mouse and buttons (0x5f2d, lmb, rmb)
     poke(0x5f2d, 0x1, 0x2)
 
-    make_level_timers()
-
     -- construct a new level called 'test1'
     curr_level = _level:new(
         'test1', {
@@ -73,6 +71,7 @@ function tl_init()
         }
     )
 
+    make_level_timers()
     init_level_timers()
 
     local func
@@ -135,22 +134,20 @@ function tl_init()
 end
 
 function set_new_level()
-    if new_level then
-        level_clicked = 0
-        idle_subs = 0
+    level_clicked = 0
+    idle_subs = 0
 
-        curr_level = _levels.names[curr_level_num + 1]
-        click_val = 0
+    curr_level = _levels.names[curr_level_num + 1]
+    click_val = 0
 
-        roll()
+    roll()
 
-        curr_viewers = 0
-        displayed_viewers = 0
+    curr_viewers = 0
+    displayed_viewers = 0
 
-        init_level_timers()
+    init_level_timers()
 
-        new_level = false
-    end
+    new_level = false
 end
 
 function tl_update()
@@ -164,7 +161,9 @@ function tl_update()
     _timers:update(_dt)
     -- 2
 
-    set_new_level()
+    if new_level then
+        set_new_level()
+    end
     -- 3
 
     -- update current level
