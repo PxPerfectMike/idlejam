@@ -194,11 +194,11 @@ end
 
 -- credit for the equations goes to Anthony Percorella, "The Math of Idle Games, Part 1", Kongregate Developers Blog
 --[[
-      find how much the next upgrade cost
-      b = the base price
-      r = the price growth rate exponent
-      k = the number of generators currently owned
-  ]]
+    find how much the next upgrade cost
+    b = the base price
+    r = the price growth rate exponent
+    k = the number of generators currently owned
+]]
 function cost_next(b, r, k)
     return b * r ^ (k or 1)
 end
