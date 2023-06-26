@@ -11,17 +11,3 @@ function ln(x)
 
     return sum
 end
-
-function newtonRaphsonLog(x)
-    -- this determines the accuracy of the result
-    local epsilon = 0.00001
-
-    local guess = x
-
-    while abs(exp(guess) - x) > epsilon do
-        guess = guess - (exp(guess) - x) / exp(guess)
-        print(guess, 0, 0, 7)
-    end
-
-    return guess
-end
