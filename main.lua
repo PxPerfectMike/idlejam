@@ -12,11 +12,6 @@ function ln(x)
     return sum
 end
 
-function exp(x)
-    --2.718281828459
-    --return pow(2.71828, x)
-end
-
 function newtonRaphsonLog(x)
     -- this determines the accuracy of the result
     local epsilon = 0.00001

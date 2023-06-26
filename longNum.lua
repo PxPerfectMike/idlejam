@@ -65,20 +65,19 @@ function furthest_from_zero(num1, num2)
     end
 end
 
--- error check long number [think of adding , variable_name) for errors]
+-- error check long number
 function check_long_num(num)
     -- check variable
-    err_check(type(num) != 'nil', "inputed long number dosen't exist", 1)
-    err_check(type(num) == 'table', "inputed long\nnumber is not a table", 1)
+    assert(type(num) == 'table', "inputed long number dosen't exist or is not a table")
     -- check values
-    err_check(type(num.values) != 'nil', "inputed long number is missing a values\nvariable", 2)
-    err_check(type(num.values) == 'table', "inputed long number's values\nvariable is not a table", 3)
+    assert(type(num.values) != 'nil', "inputed long number is missing a values\nvariable")
+    assert(type(num.values) == 'table', "inputed long number's values\nvariable is not a table")
     -- check decimal
-    err_check(type(num.decimal) != 'nil', "inputed long number is missing\na decimal variable", 2)
-    err_check(type(num.decimal) == 'number', "inputed long number's decimal\nvariable is not a number", 3)
+    assert(type(num.decimal) != 'nil', "inputed long number is missing\na decimal variable")
+    assert(type(num.decimal) == 'number', "inputed long number's decimal\nvariable is not a number")
     -- check pos
-    err_check(type(num.positive) != 'nil', "inputed long\nnumber is missing a positive variable", 2)
-    err_check(type(num.positive) == 'boolean', "inputed long number's pos\nvariable is not a boolean", 3)
+    assert(type(num.positive) != 'nil', "inputed long\nnumber is missing a positive variable")
+    assert(type(num.positive) == 'boolean', "inputed long number's pos\nvariable is not a boolean")
 end
 
 --=======================================================================
@@ -86,11 +85,12 @@ end
 --=======================================================================
 
 -- given a string input make a struct that stores a number of any length
-function long_num(string)
+function long_num(num)
     -- check that variable string is a string
-    -- err_check()
 
-    local str = string or ''
+    if type(num) == 'number' then num = tostr(num) end
+
+    local str = num or ''
 
     -- all the values place values
     local v = {}
@@ -116,12 +116,12 @@ function long_num(string)
     for i = p and 1 or 2, #str do
         local char = sub(str, i, i)
         -- check for a negative sign in the middle of the number
-        err_check(char != '-', "invalid number input:\na negative sign in the middle\nof the number")
+        assert(char != '-', "invalid number input:\na negative sign in the middle\nof the number")
 
         -- deal with values place number
         if char == '.' then
             -- check for a second decimal
-            if d != 0 then err_check(char != '.', "invalid number input:\nmultiple decimal places") end
+            if d != 0 then assert(char != '.', "invalid number input:\nmultiple decimal places") end
             d = i - decimal_buff
             if not p then d -= 1 end
             -- if the decimal place is the first character or comes right after the negative sign
@@ -142,7 +142,7 @@ function long_num(string)
                 zero_count = 0
             end
         else
-            err_check(is_num(char), 'invalid number input:\ninput contains a non-number character')
+            assert(is_num(char), 'invalid number input:\ninput contains a non-number character')
             -- track the consecutive number of zeros
             if char == '0' then
                 zero_count += 1
@@ -389,32 +389,6 @@ function long_flr(num)
     return result
 end
 
---[[
--- at give value_place, round the number num up
-function round_up_long_num(num, value_place)
-    local index = num.decimal - value_place + 1
-    if num.values[index] and num.values[index] >= 5 then
-        local i = index - 1
-        while i >= 1 and num.values[i] == 9 do
-            num.values[i] = 0
-            i = i - 1
-        end
-        if i < 1 then
-            -- need to add an additional place
-            add(num.values, 1)
-            num.decimal = num.decimal + 1
-        else
-            num.values[i] = num.values[i] + 1
-        end
-    end
-    -- remove all places below the rounding place
-    for i = index, #num.values do
-
-    end
-    return num
-end
-]]
-
 --=======================================================================
 -- comparitor functions
 --=======================================================================
@@ -499,84 +473,9 @@ function _long_num.__concat(a, b)
     return tostr(a) .. tostr(b)
 end
 
---=======================================================================
--- math to find cost and production
---=======================================================================
+-- writies out number in scientific form
+function scientific(num)
+    local str = ''
 
---[[
-    each generator needs
-    - initial cost
-    - cost coefficient (aka cost growth)
-    - inital Time/rate
-    - base production (rate)
-]]
-
--- credit for the equations goes to Anthony Percorella, "The Math of Idle Games, Part 1", Kongregate Developers Blog
---[[
-      find how much the next upgrade cost
-      b = the base price
-      r = the price growth rate exponent
-      k = the number of generators currently owned
-  ]]
-
-function cost_next(b, r, k)
-    return b * r ^ (k or 1)
-end
-
---[[
-      takes a float and rounds it to format it like money
-  ]]
-function float_to_money(x)
-    --x * 1000 % 10
-end
-
--- find how much each generator makes per unit of measurement
-function total_production(_production_base, _owned, _multipliers)
-    return _production_base * _owned * _multipliers
-end
-
---[[
-      find how much it costs to buy in bulk ammount
-      n = the number of generators to buy
-      b = the base price
-      r = the price growth rate exponent
-      k = the number of generators currently owned
-  ]]
-function bulk_buy_cost(b, r, k, n)
-    return b * r ^ k * (r ^ n - 1) / (r - 1)
-end
-
---[[
-      what is the maximum ammount of units you can buy
-      b = the base price
-      r = the price growth rate exponent
-      k = the number of generators currently owned
-      c = the amount of currency owned
-  ]]
-function max_buy_ammount(b, r, k, c)
-    return flr(ln(c * (r - 1) / b * r ^ k + 1) / ln(r))
-end
-
-function err_check(condition, string, err_type)
-    local err_types = {
-        'invalid input',
-        'missing variable',
-        'incorrect variable type'
-    }
-    local msg = 'check err.txt for full details'
-    local divider = '===========================================================================\n'
-    --[[
-    if err_type and err_type > 0 and err_type <= #err_types then
-        -- the detailed plain text information
-        string = divider
-                .. err_types[err_type] .. ":\n" .. string .. '\n' .. divider
-        -- the assert message
-        msg = '[' .. err_types[err_type] .. "]\n" .. msg
-    else
-        string = '' .. divider .. string .. '\n' .. divider
-    end
-    ]]
-
-    printh(string, "err.txt", true)
-    assert(condition, msg)
+    str = str .. ''
 end

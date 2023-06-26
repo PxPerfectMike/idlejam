@@ -1,4 +1,3 @@
--- while local, _keyboard_input variables are all globaly accessable
 local _keyboard_input = {
     active = false,
     text = '',

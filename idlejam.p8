@@ -6,83 +6,20 @@ __lua__
 #include longNum.lua
 #include timers.lua
 #include idlemath.lua
+#include mouse.lua
 #include main.lua
-
-local lmb_pressed = false
-
-local test_level
+#include testlevels.lua
 
 function _init()
-    -- enable mouse and buttons (0x5f2d, lmb, rmb)
-    poke(0x5f2d, 0x1, 0x2)
-
-    timers:add('click_decay', 0, click_decay_interval)
-
-    timers:add('update_viewers', 0, 4, 1)
-    timers:add('incrament_viewers', 0.5, 0.5)
-    timers:add('donation_time', 0, 20, 5)
-    timers:add('sub_time', 0, 1)
-
-    test_level = level:new({
-        click_threshold = 3
-    })
-
-    timers:start('update_viewers')
-    timers:start('donation_time')
-    timers:start('sub_time')
-    tas_machines = 6
-    test_level:find_speed()
-    test_level:find_viewers()
+    --tl_init()
 end
 
 function _update()
-    cls(2)
-    local _dt = 1 / stat(7)
-
-    -- basically unity's key_trigger
-
-    if stat(34) == 1 and not lmb_pressed then
-        test_level:clicked()
-        lmb_pressed = true
-    end
-    if stat(34) == 0 and lmb_pressed then
-        lmb_pressed = false
-    end
-
-    test_level:find_speed()
-
-    -- timed function
-    if timers:reached_target('update_viewers') then
-        test_level:find_viewers()
-    end
-
-    test_level:update()
-
-    -- update timers
-    timers:update(_dt)
+    --tl_update()
 end
 
 function _draw()
-    --timers:reached_target()
-
-    print(stat(34), 0, 0, 7)
-    print('click value: ' .. click_val, 0, 6, 7)
-    print('tash machines: ' .. tas_machines .. ' x ' .. test_level.tas_benefit)
-    print('cpus: ' .. cpus .. ' x ' .. test_level.cpu_benefit)
-
-    print('speed level: ' .. speed_level)
-    print('viewers: ' .. curr_viewers)
-    print('displayed viewers: ' .. displayed_viewers)
-    print('chance: ' .. chance)
-    print('sub val: ' .. base_val + idle_sub_buff)
-    print('idle subs: ' .. test_level.idle_subs)
-    print('subscribers: ' .. sub_count)
-    print('\nmoney: ' .. money)
-    print('\n[timers]:')
-    for i = 1, #timers.names do
-        local t_name = timers.names[i]
-        print('' .. t_name .. ': ' .. timers.time[t_name] .. ', ' .. timers.target[t_name])
-    end
+    --tl_draw()
 end
 
 __gfx__
