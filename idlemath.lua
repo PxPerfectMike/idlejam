@@ -1,7 +1,7 @@
 -- global variables
 
 -- defined values
-click_decay_interval = 1 / 4 -- what fraction of a second does the click decay happen
+click_decay_interval = 1 / 3 -- what fraction of a second does the click decay happen
 
 -- counting tracker variables
 money = long_num()
@@ -32,7 +32,7 @@ tas_machines = 0
 cpu_price_growth = 100
 
 -- idle sub variables (don't modify)
-level_clicked = 0 -- how many time the player clicked in this level
+_level_clicked = 0 -- how many time the player clicked in this _level
 idle_subs = 0 -- how many subscribers will subscribe while the player does nothing
 
 --======================================================
@@ -53,54 +53,54 @@ chance = 0
 
 --==================================================================================================
 -- level class
-level = {
-    click_threshold = 3, -- how much click value for a speed level
+_level = {
+    click_threshold = 3, -- how much click value for a speed _level
 
     cpu_benefit = 1, -- how much the cpu affects the "game play" speed
 
     tas_benefit = 1, -- how much base speed is applied
     tas_max = 10, -- how many tas machines the player can have
 
-    viewer_interest = 1, -- the multiply for how many viewers this game draws per speed level
+    viewer_interest = 1, -- the multiply for how many viewers this game draws per speed _level
     viewer_flux_range = 2, -- the rentention fluxation of this game
 
     sub_buff = 5 -- how much higher click value should be than base_val to possibly increase subs
 }
-level.__index = level
+_level.__index = _level
 --==================================================================================================
--- global table of all levels
-levels = {
+-- global table of all _levels
+_levels = {
     names = {}
 }
 
-function level:new(name, o)
+function _level:new(name, o)
     assert(type(name) == 'string', 'there needs to be a "name" string.')
-    assert(levels[name] == nil, 'Level with that name already exists!')
+    assert(_levels[name] == nil, '_level with that name already exists!')
 
-    add(levels.names, name)
+    add(_levels.names, name)
 
-    levels[name] = setmetatable(o or {}, self)
+    _levels[name] = setmetatable(o or {}, self)
 
     return name
 end
 
 -- get speed value
-function level:get_speed_val()
+function _level:get_speed_val()
     --long_flr(long_num(click_val) * 0.05)
     return flr(click_val / self.click_threshold)
 end
 
 -- get base speed value
-function level:get_base_val()
+function _level:get_base_val()
     return (tas_machines <= self.tas_max and tas_machines or self.tas_max) * self.tas_benefit
 end
 
 -- get minimum click value to get subscribers
-function level:get_sub_buff()
+function _level:get_sub_buff()
     return self.sub_buff
 end
 
-function level:clicked()
+function _level:clicked()
     click_val += cpus * (1 + self.cpu_benefit)
     -- the max value a click can have
     local click_max = self.click_threshold * speed_levels
@@ -110,14 +110,14 @@ function level:clicked()
         click_val = click_max
     end
 
-    timers:start('click_decay')
+    _timers:start('click_decay')
 
     -- calculate idle sub chance
-    level_clicked += 1
+    _level_clicked += 1
 
-    if level_clicked == 100 then
+    if _level_clicked == 100 then
         idle_subs += 1
-        level_clicked = 0
+        _level_clicked = 0
     end
 end
 
@@ -126,22 +126,22 @@ function roll()
     chance = flr(rnd(100)) + 1
 end
 
-function level:update()
+function _level:update()
     -- find the base speed value
     local base_val = (tas_machines <= self.tas_max and tas_machines or self.tas_max) * self.tas_benefit
 
     -- do click decay
-    if timers:reached_target('click_decay') then
+    if _timers:reached_target('click_decay') then
         click_val -= 1 + self.cpu_benefit
     end
 
     if click_val < base_val then
         click_val = base_val
-        timers:stop('click_decay')
+        _timers:stop('click_decay')
     end
 
     -- do subscription calculations
-    if timers:reached_target('sub_time') then
+    if _timers:reached_target('sub_time') then
         -- the max value a click can have
         local click_max = self.click_threshold * speed_levels
         -- how high the click value must be to gain subscribers actively
@@ -152,7 +152,7 @@ function level:update()
         -- rolling the chance variable for a percentage of 100
         roll()
 
-        if (base_val == sub_val and timers:is_active('click_decay') or click_val >= sub_val) and chance <= active_sub_chance then
+        if (base_val == sub_val and _timers:is_active('click_decay') or click_val >= sub_val) and chance <= active_sub_chance then
             sub_count += 1
         elseif idle_subs > 0 and chance <= idle_sub_chance then
             sub_count += 1
@@ -163,7 +163,7 @@ function level:update()
     end
 
     -- calculating viewer count
-    if timers:reached_target('update_viewers') then
+    if _timers:reached_target('update_viewers') then
         local base_viewers = flr(click_val / self.click_threshold * self.viewer_interest)
 
         curr_viewers = flr(rnd(self.viewer_flux_range * 2) - self.viewer_flux_range) + base_viewers
@@ -171,7 +171,7 @@ function level:update()
     end
 
     -- slowly incrament the displayed viewer count to the actual viewer count
-    if timers:reached_target('incrament_viewers') then
+    if _timers:reached_target('incrament_viewers') then
         if displayed_viewers > curr_viewers then
             displayed_viewers -= 1
         elseif displayed_viewers < curr_viewers then
@@ -180,14 +180,14 @@ function level:update()
     end
 
     -- do donation calculations
-    if timers:reached_target('donation_time') then
+    if _timers:reached_target('donation_time') then
         money += donos_per_viewer * curr_viewers
     end
 end
 
-function levels:load(name)
+function _levels:load(name)
     assert(type(name) == 'string', 'there needs to be a "name" string.')
-    assert(levels[name], 'Level does not exist')
+    assert(_levels[name], '_level does not exist')
 end
 
 -- credit for the equations goes to Anthony Percorella, "The Math of Idle Games, Part 1", Kongregate Developers Blog

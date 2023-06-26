@@ -2,16 +2,18 @@ pico-8 cartridge // http://www.pico-8.com
 version 38
 __lua__
 
+#include longNum.lua
+#include controls.lua
+#include timers.lua
+#include keyboardinput.lua
+
 #include main.lua
 #include animation.lua
-#include longNum.lua
-#include testlevels.lua
-#include tests.lua
-#include controls.lua
-#include keyboardinput.lua
-#include idlemath.lua
-#include timers.lua
 
+#include idlemath.lua
+#include testlevels.lua
+
+--[[
 function _init()
     tl_init()
 end
@@ -23,6 +25,7 @@ end
 function _draw()
     tl_draw()
 end
+]]
 
 __gfx__
 eeeeeeee111111112222222233333333444444445555555566666666777777778888888899999999aaaaaaaabbbbbbbbccccccccddddddddffffffffeeeeeeee

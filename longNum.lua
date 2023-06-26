@@ -1,5 +1,5 @@
 -- a metatable to be shared by all long numbers
-local _long_num = {}
+_long_num = {}
 
 --=======================================================================
 -- helper functions
@@ -92,7 +92,6 @@ function long_num(num)
 
     local str = num or ''
 
-
     -- all the values place values
     local v = {}
     -- where the decimal starts
@@ -111,7 +110,6 @@ function long_num(num)
         v = { 0 }
         goto returnNum
     end
-
 
     if (sub(str, 1, 1) == "-") p = false
     -- read all the numbers

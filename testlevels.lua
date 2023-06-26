@@ -3,19 +3,19 @@ curr_level = ''
 new_level = false
 
 function make_level_timers()
-    timer:new('click_decay', 0, click_decay_interval)
-    timer:new('update_viewers', 0, 4, 1)
-    timer:new('incrament_viewers', 0.4, 0.4, 0.3)
-    timer:new('donation_time', 0, 20, 5)
-    timer:new('sub_time', 0, 1)
-    timer:new('controls_back_on', 0, 5)
+    _timer:new('click_decay', 0, click_decay_interval)
+    _timer:new('update_viewers', 0, 4, 1)
+    _timer:new('incrament_viewers', 0.4, 0.4, 0.3)
+    _timer:new('donation_time', 0, 20, 5)
+    _timer:new('sub_time', 0, 1)
+    _timer:new('controls_back_on', 0, 5)
 end
 
 function init_level_timers()
-    timers:start('update_viewers')
-    timers:start('incrament_viewers')
-    timers:start('donation_time')
-    timers:start('sub_time')
+    _timers:start('update_viewers')
+    _timers:start('incrament_viewers')
+    _timers:start('donation_time')
+    _timers:start('sub_time')
 end
 
 function tl_init()
@@ -25,7 +25,7 @@ function tl_init()
     make_level_timers()
 
     -- construct a new level called 'test1'
-    curr_level = level:new(
+    curr_level = _level:new(
         'test1', {
             click_threshold = 3,
 
@@ -41,7 +41,7 @@ function tl_init()
         }
     )
 
-    level:new(
+    _level:new(
         'test2', {
             click_threshold = 10,
 
@@ -57,7 +57,7 @@ function tl_init()
         }
     )
 
-    level:new(
+    _level:new(
         'test3', {
             click_threshold = 1000,
 
@@ -75,52 +75,58 @@ function tl_init()
 
     init_level_timers()
 
+    local func
+
     control:set(
         "lmb",
         function() return stat(34) == 1 end, {
-            trigger = function() levels[curr_level]:clicked() end
+            trigger = function() _levels[curr_level]:clicked() end
         }
     )
+
+    func = function()
+        curr_level_num = (curr_level_num + 1) % #_levels.names
+        new_level = true
+    end
 
     control:set(
         "left_arrow",
         function() return btn(0) end, {
-            trigger = function()
-                curr_level_num = (curr_level_num + 1) % #levels.names
-                new_level = true
-            end,
-            press = function()
-                curr_level_num = (curr_level_num + 1) % #levels.names
-                new_level = true
-            end
+            trigger = func,
+            press = func
         }
     )
+
+    func = function()
+        curr_level_num = (curr_level_num + 1) % #_levels.names
+        new_level = true
+    end
 
     control:set(
         "right_arrow",
         function() return btn(1) end, {
-            trigger = function()
-                curr_level_num = (curr_level_num + 1) % #levels.names
-                new_level = true
-            end,
-            press = function()
-                curr_level_num = (curr_level_num + 1) % #levels.names
-                new_level = true
-            end
+            trigger = func,
+            press = func
         }
     )
+
+    func = function() cpus += 1 end
 
     control:set(
         "up_arrow",
         function() return btn(2) end, {
-            trigger = function() cpus += 1 end
+            trigger = func,
+            press = func
         }
     )
+
+    func = function() tas_machines += 1 end
 
     control:set(
         "down_arrow",
         function() return btn(3) end, {
-            trigger = function() tas_machines += 1 end
+            trigger = func,
+            press = func
         }
     )
 
@@ -133,7 +139,7 @@ function set_new_level()
         level_clicked = 0
         idle_subs = 0
 
-        curr_level = levels.names[curr_level_num + 1]
+        curr_level = _levels.names[curr_level_num + 1]
         click_val = 0
 
         roll()
@@ -155,14 +161,14 @@ function tl_update()
     -- 1
 
     -- update all timers
-    timers:update(_dt)
+    _timers:update(_dt)
     -- 2
 
     set_new_level()
     -- 3
 
     -- update current level
-    levels[curr_level]:update()
+    _levels[curr_level]:update()
     -- 4
 
     -- clear clicked
@@ -171,7 +177,7 @@ function tl_update()
 end
 
 function tl_draw()
-    local _level = levels[curr_level]
+    local _level = _levels[curr_level]
 
     print('level: ' .. curr_level, 7)
 
@@ -180,6 +186,7 @@ function tl_draw()
     print('MAX: ' .. _level.click_threshold * speed_levels)
     print('POW: ' .. cpus * (1 + _level.cpu_benefit))
     print('BASE: ' .. _level:get_base_val())
+    print('THLD: ' .. _level.click_threshold)
 
     local speed_val = _level:get_speed_val()
 
@@ -201,7 +208,7 @@ function tl_draw()
     print('sub val: ' .. _level:get_base_val() + _level:get_sub_buff())
     print('idle subs: ' .. idle_subs)
 
-    print('[tas machines]: ' .. tas_machines, 0, 6 * 15)
+    print('[tas machines]: ' .. tas_machines .. " LVL MAX:" .. _level.tas_max, 0, 6 * 15)
     print('[cpus]: ' .. cpus)
     print('[displayed viewers]: ' .. displayed_viewers)
     print('[subscribers]: ' .. sub_count)
