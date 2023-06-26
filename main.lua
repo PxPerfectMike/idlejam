@@ -1,5 +1,3 @@
-mathtest = false
-
 -- chat variables
 chat_spawn_timer = 0
 chat_spawn_interval = 1 -- in seconds
@@ -39,31 +37,194 @@ function get_state(name)
     return State._state[name]
 end
 
+--===============================================================
+-- math level management
+curr_level = ''
+new_level = false -- flag to switch level
+--===============================================================
+
+function make_level_timers()
+    _timer:new('click_decay', 0, click_decay_interval)
+    _timer:new('update_viewers', 0, 4, 1)
+    _timer:new('incrament_viewers', 0.4, 0.4, 0.3)
+    _timer:new('donation_time', 0, 20, 5)
+    _timer:new('sub_time', 0, 1)
+    _timer:new('controls_back_on', 0, 5)
+end
+
+function init_level_timers()
+    _timers:start('update_viewers')
+    _timers:start('incrament_viewers')
+    _timers:start('donation_time')
+    _timers:start('sub_time')
+end
+
+function set_level_controls()
+    -- enable mouse and buttons (0x5f2d, lmb, rmb)
+    poke(0x5f2d, 0x1, 0x2)
+
+    control:set(
+        "lmb",
+        function() return stat(34) == 1 end, {
+            trigger = function()
+                _levels[curr_level]:clicked()
+            end
+        }
+    )
+
+    control:set(
+        "left_arrow",
+        function() return btn(0) end, {
+            trigger = function()
+                level -= 1
+                if (level > 5) level = 1
+                if (level < 1) level = 5
+                new_level = true
+            end
+        }
+    )
+
+    control:set(
+        "right_arrow",
+        function() return btn(1) end, {
+            trigger = function()
+                level += 1
+                if (level > 5) level = 1
+                if (level < 1) level = 5
+                new_level = true
+            end
+        }
+    )
+end
+
+function construct_levels()
+    -- construct a new level called 'test1'
+    curr_level = _level:new(
+        'lvl1', {
+            click_threshold = 1,
+
+            cpu_benefit = 1,
+
+            tas_benefit = 1,
+            tas_max = 20,
+
+            viewer_interest = 2,
+            viewer_flux_range = 2,
+
+            idle_sub_buff = 5
+        }
+    )
+
+    _level:new(
+        'lvl2', {
+            click_threshold = 10,
+
+            cpu_benefit = 1,
+
+            tas_benefit = 1,
+            tas_max = 20,
+
+            viewer_interest = 5,
+            viewer_flux_range = 2,
+
+            idle_sub_buff = 10
+        }
+    )
+
+    _level:new(
+        'lvl3', {
+            click_threshold = 1000,
+
+            cpu_benefit = 1,
+
+            tas_benefit = 1,
+            tas_max = 40,
+
+            viewer_interest = 5,
+            viewer_flux_range = 2,
+
+            idle_sub_buff = 10
+        }
+    )
+
+    _level:new(
+        'lvl4', {
+            click_threshold = 1000,
+
+            cpu_benefit = 1,
+
+            tas_benefit = 1,
+            tas_max = 40,
+
+            viewer_interest = 5,
+            viewer_flux_range = 2,
+
+            idle_sub_buff = 10
+        }
+    )
+
+    _level:new(
+        'lvl5', {
+            click_threshold = 1000,
+
+            cpu_benefit = 1,
+
+            tas_benefit = 1,
+            tas_max = 40,
+
+            viewer_interest = 5,
+            viewer_flux_range = 2,
+
+            idle_sub_buff = 10
+        }
+    )
+end
+
+function set_new_level()
+    level_clicked = 0
+    idle_subs = 0
+
+    curr_level = _levels.names[level]
+    click_val = 0
+
+    roll()
+
+    curr_viewers = 0
+    displayed_viewers = 0
+
+    init_level_timers()
+
+    new_level = false
+end
+
 function _init()
+    construct_levels()
+    set_level_controls()
+    make_level_timers()
+    init_level_timers()
+
     bg_transition_needed = true
 
-    if not mathtest then
-        cls()
-        sky_speed = 0.3 -- initial sky speed
-        palt(14, true) -- pink color as transparency is true
-        palt(0, false) -- black color as transparency is false
+    cls()
+    sky_speed = 0.3
+    -- initial sky speed
+    palt(14, true)
+    -- pink color as transparency is true
+    palt(0, false)
+    -- black color as transparency is false
 
-        -- initialize ground with enough sprites to fill the screen
-        for i = 0, 15 do
-            ------------>changed both ground_table indexes from 1 to level
-            add(ground, { x = i * 8, frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1] })
-        end
+    -- initialize ground with enough sprites to fill the screen
+    for i = 0, 15 do
+        ------------>changed both ground_table indexes from 1 to level
+        add(ground, { x = i * 8, frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1] })
+    end
 
-        -- initialize sky with enough sprites to fill the screen
-        for i = 0, 15 do
-            for j = 1, 12 do
-                -- for each sprite, select a random frame from the corresponding row in the sky_table
-                add(sky, { x = i * 8, y = sky_arr[j], frame = sky_table[j].frames[flr(rnd(#sky_table[j].frames)) + 1], row = j })
-            end
+    -- initialize sky with enough sprites to fill the screen
+    for i = 0, 15 do
+        for j = 1, 12 do
+            -- for each sprite, select a random frame from the corresponding row in the sky_table
+            add(sky, { x = i * 8, y = sky_arr[j], frame = sky_table[j].frames[flr(rnd(#sky_table[j].frames)) + 1], row = j })
         end
-    else
-        --------> separate for animation/math testing
-        -- run_tests()
     end
 end
 
@@ -104,11 +265,29 @@ end
 prev_level = 1 -- Initialize this with your initial level
 
 function _update()
-    if not mathtest then
-        character_switch()
-        speed_switch()
-        animation(character_table[level].frames, speed)
+    local _dt = 1 / stat(7)
+
+    controls:update(_dt)
+    -- 1
+
+    -- update all timers
+    _timers:update(_dt)
+    -- 2
+
+    if new_level then
+        set_new_level()
     end
+
+    -- update current level
+    _levels[curr_level]:update()
+    -- 4
+
+    -- set speed values
+    speed = _levels[curr_level]:get_speed_val() + 1
+    sky_speed = 1.1 ^ (speed - 1) / 20
+    -- 3
+
+    animation(character_table[level].frames)
 
     if level ~= prev_level then
         -- Indicate that a background transition is needed
@@ -119,8 +298,7 @@ function _update()
     bg_transition()
 
     -- Increase timer by frame duration
-    chat_spawn_timer += 1 / 30
-    -- assuming 30 frames per second
+    chat_spawn_timer += _dt
 
     -- Check if it's time to possibly spawn a new chat sprite
     if chat_spawn_timer >= chat_spawn_interval then
@@ -138,67 +316,89 @@ function _update()
             -- Spawn new chat sprite and message at the top
             local chat_frame = chat_table.frames[flr(rnd(#chat_table.frames)) + 1]
             local message_frame = chat_message_table.frames[flr(rnd(#chat_message_table.frames)) + 1]
-            add(chat_entities, { chat = { x = 97, y = 26, frame = chat_frame }, message = { x = 105, y = 26, frame = message_frame } })
+            add(
+                chat_entities, {
+                    chat = { x = 97, y = 26, frame = chat_frame },
+                    message = { x = 105, y = 26, frame = message_frame }
+                }
+            )
         end
     end
+
+    -- clear clicked
+    controls:reset()
+    --5
+end
+
+-- draw sky sprites
+function draw_sky()
+    for i, s in pairs(sky) do
+        spr(s.frame, s.x, s.y, 1, 1)
+        s.x -= sky_speed -- use sky_speed here instead of speed
+        -- if a sprite goes off screen on the left, move it to the right side and change its frame
+        if s.x < -8 then
+            s.x = s.x + 128
+            -- select a new sprite from the correct row
+            s.frame = sky_table[s.row].frames[flr(rnd(#sky_table[s.row].frames)) + 1]
+        end
+    end
+end
+
+local test
+
+-- draw ground sprites
+function draw_ground()
+    for i, g in pairs(ground) do
+        test = g.x
+        spr(g.frame, g.x, 120, 1, 1)
+        g.x -= speed / 8 ---------------- adjust this to make the speed relevant to animation frames *********
+        -- if a sprite goes off screen on the left, move it to the right side and change its frame
+        if g.x < -8 then
+            g.x = g.x + 128
+            g.frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1]
+        end
+    end
+end
+
+function draw_chat()
+    -- right bar
+    rectfill(96, 25, 128, 128, 5)
+
+    -- draw chat sprites
+    for i, entity in pairs(chat_entities) do
+        print('draw ' .. entity.chat.frame, 4 * 15 + 2, 2, 7)
+        spr(entity.chat.frame, entity.chat.x, entity.chat.y, 1, 1)
+        spr(entity.message.frame, entity.message.x, entity.message.y, 3, 1)
+    end
+end
+
+function draw_top_bar()
+    -- top bar
+    rectfill(0, 0, 128, 25, 13)
+
+    -- rectfill(0, 17, 96, 119, 12) -- sky area
+    line(0, 25, 128, 25, 7)
+    -- top separator
+    line(96, 25, 96, 128, 7)
+    -- right separator
+
+    spr(current_frame, 42, 104, 2, 2)
+    print("ground frame: " .. test, 4 * 15 + 2, 2, 7)
+    print("streamer name", 2, 2, 8)
+    print("level: " .. level, 2, 10, 7)
+    print("character speed: " .. speed, 2, 18, 7)
+
+    print("click val: " .. click_val, 4 * 10 + 2, 10)
 end
 
 function _draw()
-    if not mathtest then
-        cls()
+    cls()
 
-        -- draw sky sprites
-        for i, s in pairs(sky) do
-            spr(s.frame, s.x, s.y, 1, 1)
-            s.x -= sky_speed -- use sky_speed here instead of speed
-            -- if a sprite goes off screen on the left, move it to the right side and change its frame
-            if s.x < -8 then
-                s.x = s.x + 128
-                -- select a new sprite from the correct row
-                s.frame = sky_table[s.row].frames[flr(rnd(#sky_table[s.row].frames)) + 1]
-            end
-        end
+    draw_sky()
 
-        -- draw ground sprites
-        for i, g in pairs(ground) do
-            spr(g.frame, g.x, 120, 1, 1)
-            g.x -= speed / 8 ---------------- adjust this to make the speed relevant to animation frames *********
-            -- if a sprite goes off screen on the left, move it to the right side and change its frame
-            if g.x < -8 then
-                g.x = g.x + 128
-                g.frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1]
-            end
-        end
+    draw_ground()
 
-        rectfill(96, 25, 128, 128, 5) -- right bar
-        -- -- draw chat sprites
-        for i, entity in pairs(chat_entities) do
-            spr(entity.chat.frame, entity.chat.x, entity.chat.y, 1, 1)
-            spr(entity.message.frame, entity.message.x, entity.message.y, 3, 1)
-        end
+    draw_chat()
 
-        rectfill(0, 0, 128, 25, 13) -- top bar
-        -- rectfill(0, 17, 96, 119, 12) -- sky area
-        line(0, 25, 128, 25, 7) -- top separator
-        line(96, 25, 96, 128, 7) -- right separator
-
-        spr(current_frame, 42, 104, 2, 2)
-        print("streamer name", 2, 2, 8)
-        print("level: " .. level, 2, 10, 7)
-        print("character speed: " .. speed, 2, 18, 7)
-    end
-end
-
-function ln(x)
-    local n = 1000
-    -- The larger this value, the more accurate the result.
-    local a = (x - 1) / (x + 1)
-    local sum = 0
-
-    for i = 0, n do
-        local term = 2 * a ^ (2 * i + 1) / (2 * i + 1)
-        sum = sum + term
-    end
-
-    return sum
+    draw_top_bar()
 end
