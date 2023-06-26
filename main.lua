@@ -84,9 +84,8 @@ function bg_transition()
         return
     end
 
-
     -- Change the background color based on the level (current color, new color, start x, start y, end x, end y)
-    if level == 2 then 
+    if level == 2 then
         change_bg_color(12, 13, 0, 48, 63, 104)
         change_bg_color(6, 5, 0, 48, 63, 104)
         change_bg_color(1, 8, 0, 48, 63, 104)
@@ -163,7 +162,7 @@ function _draw()
         -- draw ground sprites
         for i, g in pairs(ground) do
             spr(g.frame, g.x, 120, 1, 1)
-            g.x -= speed / ground_speed_control + 0.2
+            g.x -= speed / 8 ---------------- adjust this to make the speed relevant to animation frames *********
             -- if a sprite goes off screen on the left, move it to the right side and change its frame
             if g.x < -8 then
                 g.x = g.x + 128

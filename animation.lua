@@ -61,12 +61,15 @@ end
 ground_speed_control = 21
 sky_arr = { 25, 33, 41, 49, 57, 65, 73, 81, 89, 97, 105, 113, 121, 129, 137, 145, 153, 161, 169, 177, 185, 193 }
 
-function animation(sprite, animation_speed)
-    local actual_speed = ground_speed_control - animation_speed
+function animation(sprite)
+    local actual_speed = ground_speed_control - speed --use speed variable here instead of animation_speed
 
-    if (frame % actual_speed == 0) current_frame = sprite[frame / actual_speed % #sprite + 1]
+    if (frame % actual_speed == 0) then 
+        current_frame = sprite[frame / actual_speed % #sprite + 1]
+    end
     frame += 1
 end
+
 
 function character_switch()
     if (btnp(➡️)) level += 1
