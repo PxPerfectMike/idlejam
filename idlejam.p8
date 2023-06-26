@@ -2,9 +2,14 @@ pico-8 cartridge // http://www.pico-8.com
 version 38
 __lua__
 
-#include main.lua
 #include animation.lua
 #include longNum.lua
+#include timers.lua
+#include idlemath.lua
+#include mouse.lua
+#include main.lua
+#include testlevels.lua
+
 
 #include tests.lua
 
