@@ -71,7 +71,7 @@ end
 
     return:
         Wether or not the input was recorded to memory.]]
-function keyboard_input:record(record_val, text_color)
+function keyboard_input:record(record_val)
     local record = false
 
     if self.active then
@@ -110,11 +110,23 @@ function keyboard_input:record(record_val, text_color)
                 end
             end
         end
-        -- print the text
-        print(self.text, self.x, self.y, text_color or 7)
     end
 
     return record
+end
+--=============================================================================
+
+--=============================================================================
+-- draw what is on the keyboard input
+function keyboard_input:draw(text_color)
+    if self.active then
+        -- print the text
+        local print_text = self.text
+        if #self.text < self.input_len then
+            print_text = print_text .. '|'
+        end
+        print(print_text, self.x, self.y, text_color or 7)
+    end
 end
 --=============================================================================
 

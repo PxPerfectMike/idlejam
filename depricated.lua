@@ -81,3 +81,50 @@ function ln(x)
 
     return sum
 end
+
+--[[
+_ground = {
+    curr = { { sprite_num = 1, x = 0 } }, -- current ground tiles on screen
+    type = 1,
+    sprites = { names = {} },
+    dim = 8
+}
+
+ground_screen_tiles = 16
+
+function _ground:init()
+    _timer:new('ground_speed', 0, 1)
+
+    for i = 1, ground_screen_tiles do
+    end
+end
+
+function _ground:new(name)
+end
+
+function _ground:update(dt)
+    -- if timer reach target
+    if _timers:reached_target('ground_speed') then
+        -- for all current ground
+        for i = 1, ground_screen_tiles do
+        end
+
+        -- move all ground over by delta time
+    end
+
+    -- update timer speed
+    --speed / 8
+end
+
+function _ground:draw()
+    spr(g.frame, g.x, 120, 1, 1)
+
+    for i = 1, ground_screen_tiles do
+    end
+end
+
+function _ground:set_type(type)
+    _timers:start('ground_speed')
+    self.type = type
+end
+]]
