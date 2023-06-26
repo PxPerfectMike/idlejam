@@ -1,101 +1,156 @@
-mathtest = true;
+mathtest = false
+
+-- chat variables
+chat_spawn_timer = 0
+chat_spawn_interval = 1 -- in seconds
+chat_spawn_chance = 0.2 -- percentage chance to spawn a chat
+max_chat_count = 14
+
+-- table to hold chat sprites
+chat_entities = {}
+function move_chat_down()
+    for i, entity in pairs(chat_entities) do
+        entity.chat.y += 8 -- adjust this value to control how much sprites move down
+        entity.message.y += 8 -- adjust this value to control how much messages move down
+    end
+end
+
+-- working chat stuff
+chat_frames = { 80, 81, 82, 83, 84, 85, 86, 87 }
+chat_messages = { 232, 235 }
+
+-- make chat head table
+chat_table = { frames = chat_frames }
+chat_message_table = { frames = chat_messages }
+
+-- pico state hooks
+State = {
+    _state = {},
+    set_state_self_inner = function(self, name, value)
+        self._state[name] = value
+    end
+}
+
+function set_state(name, value)
+    State:set_state_self_inner(name, value)
+end
+
+function get_state(name)
+    return State._state[name]
+end
 
 function _init()
+    bg_transition_needed = true
+
     if not mathtest then
-    cls()
-    sky_speed = 0.3  -- initial sky speed
-    palt(14, true) -- pink color as transparency is true
-    palt(0, false) -- black color as transparency is false
+        cls()
+        sky_speed = 0.3 -- initial sky speed
+        palt(14, true) -- pink color as transparency is true
+        palt(0, false) -- black color as transparency is false
 
-    -- initialize ground with enough sprites to fill the screen
-    for i = 0, 15 do
-        ------------>changed both ground_table indexes from 1 to level
-        add(ground, {x = i * 8, frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1]})
+        -- initialize ground with enough sprites to fill the screen
+        for i = 0, 15 do
+            ------------>changed both ground_table indexes from 1 to level
+            add(ground, { x = i * 8, frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1] })
+        end
+
+        -- initialize sky with enough sprites to fill the screen
+        for i = 0, 15 do
+            for j = 1, 12 do
+                -- for each sprite, select a random frame from the corresponding row in the sky_table
+                add(sky, { x = i * 8, y = sky_arr[j], frame = sky_table[j].frames[flr(rnd(#sky_table[j].frames)) + 1], row = j })
+            end
+        end
+    else
+        --------> separate for animation/math testing
+        run_tests()
     end
+end
 
-    -- initialize sky with enough sprites to fill the screen
-    for i = 0, 15 do
-        for j = 1, 12 do
-            -- for each sprite, select a random frame from the corresponding row in the sky_table
-            add(sky, {x = i * 8, y = sky_arr[j], frame = sky_table[j].frames[flr(rnd(#sky_table[j].frames)) + 1], row = j})
+function change_bg_color(old_color, new_color, startX, startY, endX, endY)
+    for y = startY, endY do
+        for x = startX, endX do
+            local pixel_color = sget(x, y)
+            if pixel_color == old_color then
+                sset(x, y, new_color)
+            end
         end
     end
-else
-
-    --------> separate for animation/math testing
-
-    print("ln(1) = " .. ln(1))
-    print("ln(e) = " .. ln(2.71828))
-    -- should be close to 1
-    print("ln(54) = " .. ln(54))
-
-    --print("ln(54) = " .. newtonRaphsonLog(54))
-
-    print("2^5 = " .. pow(2, 5))
-
-    print("cost next: 4 x (1.07)^10 = " .. cost_next(4, 1.07, 10))
-    print("production total:\n(1.67 x 10) x 1 = " .. total_production(1.67, 10, 1))
-
-    local ammount = max_buy_ammount(4, 1.07, 1, 100)
-    local cost = bulk_buy_cost(4, 1.07, 1, ammount)
-    print("maximum can by with 100 is " .. ammount)
-    print("which is equal to " .. cost)
-
-    local float = 12345.6789
-
-    print("float: " .. float)
-
-    local double = make_long_num('12000599.01')
-    local str = long_num_to_string(double)
-    print(str)
-
-    local double2 = make_long_num("-120599.00001")
-    print(long_num_to_string(double2))
-
-    --add_long_nums(double, double2)
-
-    local double3 = make_long_num("-12059901.01")
-    local double4 = make_long_num("-12059901.09")
-
-    print('' .. long_num_to_string(double3) .. ' + ' .. long_num_to_string(double4) .. ' = ')
-
-    print(long_num_to_string(add_long_nums(double3, double4)))
-
-    print("start stress test")
-    --add_long_nums(make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"), make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"))
-    print("stress test done")
-
-    local double5 = make_long_num("999.999")
-    local double6 = make_long_num("999.999")
-
-    print('' .. long_num_to_string(double5) .. ' x ' .. long_num_to_string(double6) .. ' = ')
-    print(long_num_to_string(multiply_long_nums(double5, double6)))
-
-    print("start stress test")
-    local stress_test = multiply_long_nums(make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"), make_long_num("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"))
-    print("stress test done")
-
-    print(long_num_to_string(stress_test))
-    print("it has " .. #stress_test.values .. " value places")
 end
+
+function bg_transition()
+    -- Return immediately if no transition is needed
+    if not bg_transition_needed then
+        return
+    end
+
+    -- Change the background color based on the level (current color, new color, start x, start y, end x, end y)
+    if level == 2 then
+        change_bg_color(12, 13, 0, 48, 63, 104)
+        change_bg_color(6, 5, 0, 48, 63, 104)
+        change_bg_color(1, 8, 0, 48, 63, 104)
+    end
+
+    if level == 3 then
+        change_bg_color(13, 11, 0, 48, 63, 104)
+        change_bg_color(5, 10, 0, 48, 63, 104)
+        change_bg_color(1, 8, 0, 48, 63, 104)
+    end
+
+    -- Reset the flag
+    bg_transition_needed = false
 end
+
+prev_level = 1 -- Initialize this with your initial level
 
 function _update()
     if not mathtest then
-    character_switch()
-    speed_switch()
-    animation(character_table[level].frames, speed)
+        character_switch()
+        speed_switch()
+        animation(character_table[level].frames, speed)
+    end
+
+    if level ~= prev_level then
+        -- Indicate that a background transition is needed
+        bg_transition_needed = true
+        prev_level = level
+    end
+
+    bg_transition()
+
+    -- Increase timer by frame duration
+    chat_spawn_timer += 1 / 30
+    -- assuming 30 frames per second
+
+    -- Check if it's time to possibly spawn a new chat sprite
+    if chat_spawn_timer >= chat_spawn_interval then
+        -- Reset timer
+        chat_spawn_timer = 0
+
+        -- Remove chat sprite at the bottom
+        if #chat_entities == max_chat_count then
+            del(chat_entities, chat_entities[1])
+        end
+        -- Chance to spawn a new chat sprite
+        if rnd() < chat_spawn_chance and #chat_entities < max_chat_count then
+            -- Move existing chat sprites down
+            move_chat_down()
+            -- Spawn new chat sprite and message at the top
+            local chat_frame = chat_table.frames[flr(rnd(#chat_table.frames)) + 1]
+            local message_frame = chat_message_table.frames[flr(rnd(#chat_message_table.frames)) + 1]
+            add(chat_entities, { chat = { x = 97, y = 26, frame = chat_frame }, message = { x = 105, y = 26, frame = message_frame } })
+        end
     end
 end
 
 function _draw()
     if not mathtest then
-    cls()
+        cls()
 
-    -- draw sky sprites
+        -- draw sky sprites
         for i, s in pairs(sky) do
             spr(s.frame, s.x, s.y, 1, 1)
-            s.x -= sky_speed  -- use sky_speed here instead of speed
+            s.x -= sky_speed -- use sky_speed here instead of speed
             -- if a sprite goes off screen on the left, move it to the right side and change its frame
             if s.x < -8 then
                 s.x = s.x + 128
@@ -103,28 +158,34 @@ function _draw()
                 s.frame = sky_table[s.row].frames[flr(rnd(#sky_table[s.row].frames)) + 1]
             end
         end
-    
+
         -- draw ground sprites
         for i, g in pairs(ground) do
             spr(g.frame, g.x, 120, 1, 1)
-            g.x -= speed / ground_speed_control + 0.2
+            g.x -= speed / 8 ---------------- adjust this to make the speed relevant to animation frames *********
             -- if a sprite goes off screen on the left, move it to the right side and change its frame
             if g.x < -8 then
                 g.x = g.x + 128
                 g.frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1]
             end
         end
-    
+
+        rectfill(96, 25, 128, 128, 5) -- right bar
+        -- -- draw chat sprites
+        for i, entity in pairs(chat_entities) do
+            spr(entity.chat.frame, entity.chat.x, entity.chat.y, 1, 1)
+            spr(entity.message.frame, entity.message.x, entity.message.y, 3, 1)
+        end
+
         rectfill(0, 0, 128, 25, 13) -- top bar
-        rectfill(96, 25, 128, 128, 6) -- right bar
         -- rectfill(0, 17, 96, 119, 12) -- sky area
         line(0, 25, 128, 25, 7) -- top separator
         line(96, 25, 96, 128, 7) -- right separator
-    
+
         spr(current_frame, 42, 104, 2, 2)
         print("streamer name", 2, 2, 8)
-        print("level: "..level, 2, 10, 7)
-        print("character speed: "..speed, 2, 18, 7)
+        print("level: " .. level, 2, 10, 7)
+        print("character speed: " .. speed, 2, 18, 7)
     end
 end
 

@@ -103,10 +103,7 @@ function make_long_num(string)
     local str = string or '0'
 
     -- make sure an empty string error dosen't occur
-    if str == '' then
-        str = '0'
-    end
-
+    if (str == '') str = '0'
     -- all the values place values
     local v = {}
     -- where the decimal starts
@@ -120,7 +117,7 @@ function make_long_num(string)
     local zero_count = 0
     local decimal_buff = 0
 
-    if sub(str, 1, 1) == "-" then p = false end
+    if (sub(str, 1, 1) == "-") p = false
     -- read all the numbers
     for i = p and 1 or 2, #str do
         local char = sub(str, i, i)
@@ -199,8 +196,7 @@ function make_long_num(string)
     end
 
     -- if the decimal place is at the end then there isn't a decimal place
-    if #v + 1 == d then d = 0 end
-
+    if (#v + 1 == d) d = 0
     return {
         values = v,
         decimal = d,
@@ -256,6 +252,7 @@ function add_long_nums(ln1, ln2)
 
         -- record the value
         result = sum % 10 .. result
+
         -- find the carry over
         carry = flr(sum / 10)
 
@@ -313,7 +310,6 @@ function multiply_long_nums(num1, num2)
     }
 end
 
-
 -- at give value_place, round the number num up
 function round_up_long_num(num, value_place)
     local index = num.decimal - value_place + 1
@@ -361,6 +357,7 @@ end
     b = the base price
     r = the price growth rate exponent
 ]]
+
 function cost_next(b, r)
     return b * r
 end
@@ -388,7 +385,7 @@ function total_production(_production_base, _owned, _multipliers)
 end
 
 --[[
-      find how much it costs to buy in bulk ammount
+      find how much it costs to buy in bulk amount
       n = the number of generators to buy
       b = the base price
       r = the price growth rate exponent
@@ -399,12 +396,12 @@ function bulk_buy_cost(b, r, k, n)
 end
 
 --[[
-      what is the maximum ammount of units you can buy
+      what is the maximum amount of units you can buy
       b = the base price
       r = the price growth rate exponent
       k = the number of generators currently owned
       c = the amount of currency owned
   ]]
-function max_buy_ammount(b, r, k, c)
+function max_buy_amount(b, r, k, c)
     return flr(ln(c * (r - 1) / b * pow(r, k) + 1) / ln(r))
 end
