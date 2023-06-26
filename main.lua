@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 mathtest = false
 
 -- chat variables
@@ -65,7 +63,7 @@ function _init()
         end
     else
         --------> separate for animation/math testing
-        run_tests()
+        -- run_tests()
     end
 end
 
@@ -191,7 +189,6 @@ function _draw()
     end
 end
 
->>>>>>> main
 function ln(x)
     local n = 1000
     -- The larger this value, the more accurate the result.

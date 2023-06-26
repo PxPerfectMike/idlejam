@@ -86,7 +86,6 @@ function _update()
     animation(character_table[level].frames, speed)
 end
 ground_speed_control = 21
-<<<<<<< HEAD
 sky_arr = {25, 33, 41, 49, 57, 65, 73, 81, 89, 97, 105, 113, 121, 129, 137, 145, 153, 161, 169, 177, 185, 193}
 function _draw()
     cls()
