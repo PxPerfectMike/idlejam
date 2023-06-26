@@ -88,10 +88,15 @@ end
 function long_num(num)
     -- check that variable string is a string
 
+<<<<<<< HEAD
     if type(num) == 'number' then num = tostr(num) end
 
     local str = num or ''
 
+=======
+    -- make sure an empty string error dosen't occur
+    if (str == '') str = '0'
+>>>>>>> main
     -- all the values place values
     local v = {}
     -- where the decimal starts
@@ -105,12 +110,15 @@ function long_num(num)
     local zero_count = 0
     local decimal_buff = 0
 
+<<<<<<< HEAD
     -- make sure an empty string error dosen't occur
     if str == '' then
         v = { 0 }
         goto returnNum
     end
 
+=======
+>>>>>>> main
     if (sub(str, 1, 1) == "-") p = false
     -- read all the numbers
     for i = p and 1 or 2, #str do
@@ -192,9 +200,13 @@ function long_num(num)
 
     -- if the decimal place is at the end then there isn't a decimal place
     if (#v + 1 == d) d = 0
+<<<<<<< HEAD
     -- returning the long number
     ::returnNum::
     local num = {
+=======
+    return {
+>>>>>>> main
         values = v,
         decimal = d,
         positive = p
@@ -263,6 +275,7 @@ function _long_num.__add(a, b)
 
         -- record the value
         result = sum % 10 .. result
+
         -- find the carry over
         carry = flr(sum / 10)
 
@@ -348,6 +361,7 @@ function _long_num.__mul(a, b)
     return result
 end
 
+<<<<<<< HEAD
 function _long_num.__pow(a, b)
     assert(type(b) == 'number', 'That is not supported at the current moment')
 
@@ -358,6 +372,24 @@ function _long_num.__pow(a, b)
 
     for i = 2, b do
         result = result * a
+=======
+-- at give value_place, round the number num up
+function round_up_long_num(num, value_place)
+    local index = num.decimal - value_place + 1
+    if num.values[index] and num.values[index] >= 5 then
+        local i = index - 1
+        while i >= 1 and num.values[i] == 9 do
+            num.values[i] = 0
+            i = i - 1
+        end
+        if i < 1 then
+            -- need to add an additional place
+            add(num.values, 1)
+            num.decimal = num.decimal + 1
+        else
+            num.values[i] = num.values[i] + 1
+        end
+>>>>>>> main
     end
 
     return result
@@ -398,6 +430,7 @@ function _long_num.__eq(a, b)
     local num1 = a
     local num2 = b
 
+<<<<<<< HEAD
     if type(num1) == 'number' then
         num1 = long_num(tostr(num1))
     elseif type(num2) == 'number' then
@@ -406,6 +439,17 @@ function _long_num.__eq(a, b)
 
     if (num1.positive != num2.positive) return false
     return furthest_from_zero(num1, num2) == 0
+=======
+-- credit for the equations goes to Anthony Percorella, "The Math of Idle Games, Part 1", Kongregate Developers Blog
+--[[
+    find how much the next upgrade cost
+    b = the base price
+    r = the price growth rate exponent
+]]
+
+function cost_next(b, r)
+    return b * r
+>>>>>>> main
 end
 
 -- a < b
@@ -473,9 +517,32 @@ function _long_num.__concat(a, b)
     return tostr(a) .. tostr(b)
 end
 
+<<<<<<< HEAD
 -- writies out number in scientific form
 function scientific(num)
     local str = ''
 
     str = str .. ''
+=======
+--[[
+      find how much it costs to buy in bulk amount
+      n = the number of generators to buy
+      b = the base price
+      r = the price growth rate exponent
+      k = the number of generators currently owned
+  ]]
+function bulk_buy_cost(b, r, k, n)
+    return b * pow(r, k) * (pow(r, n) - 1) / (r - 1)
+end
+
+--[[
+      what is the maximum amount of units you can buy
+      b = the base price
+      r = the price growth rate exponent
+      k = the number of generators currently owned
+      c = the amount of currency owned
+  ]]
+function max_buy_amount(b, r, k, c)
+    return flr(ln(c * (r - 1) / b * pow(r, k) + 1) / ln(r))
+>>>>>>> main
 end
