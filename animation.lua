@@ -3,7 +3,6 @@ frame = 0
 
 -- level number
 level = 1
-speed = 1
 
 -- position of the rightmost ground sprite
 rightmost_ground_x = 128
@@ -140,7 +139,7 @@ end
 ]]
 
 function animation(sprite)
-    local actual_speed = ground_speed_control - speed
+    local actual_speed = ground_speed_control - _levels[curr_level]:get_speed_val()
     --use speed variable here instead of animation_speed
 
     if frame % actual_speed == 0 then

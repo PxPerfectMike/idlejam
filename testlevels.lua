@@ -176,18 +176,18 @@ function tl_update()
 end
 
 function tl_draw()
-    local _level = _levels[curr_level]
+    local __level = _levels[curr_level]
 
     print('level: ' .. curr_level, 7)
 
     print('click value', 4, 6)
     print('CUR: ' .. click_val)
-    print('MAX: ' .. _level.click_threshold * speed_levels)
-    print('POW: ' .. cpus * (1 + _level.cpu_benefit))
-    print('BASE: ' .. _level:get_base_val())
-    print('THLD: ' .. _level.click_threshold)
+    print('MAX: ' .. __level.click_threshold * speed_levels)
+    print('POW: ' .. cpus * (1 + __level.cpu_benefit))
+    print('BASE: ' .. __level:get_base_val())
+    print('THLD: ' .. __level.click_threshold)
 
-    local speed_val = _level:get_speed_val()
+    local speed_val = __level:get_speed_val()
 
     local speed_val_txt = '\nspd LVL: ' .. speed_val .. '\n['
 
@@ -204,10 +204,10 @@ function tl_draw()
     print(speed_val_txt)
     print('viewers: ' .. curr_viewers)
     print('chance: ' .. chance)
-    print('sub val: ' .. _level:get_base_val() + _level:get_sub_buff())
+    print('sub val: ' .. __level:get_base_val() + __level:get_sub_buff())
     print('idle subs: ' .. idle_subs)
 
-    print('[tas machines]: ' .. tas_machines .. " LVL MAX:" .. _level.tas_max, 0, 6 * 15)
+    print('[tas machines]: ' .. tas_machines .. " LVL MAX:" .. __level.tas_max, 0, 6 * 15)
     print('[cpus]: ' .. cpus)
     print('[displayed viewers]: ' .. displayed_viewers)
     print('[subscribers]: ' .. sub_count)

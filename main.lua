@@ -39,7 +39,6 @@ end
 
 --===============================================================
 -- math level management
-curr_level_num = 0
 curr_level = ''
 new_level = false -- flag to switch level
 --===============================================================
@@ -67,7 +66,10 @@ function set_level_controls()
     control:set(
         "lmb",
         function() return stat(34) == 1 end, {
-            trigger = function() _levels[curr_level]:clicked() end
+            trigger = function()
+                _levels[curr_level]:clicked()
+                sky_speed = 1.1 ^ (_levels[curr_level]:get_speed_val() - 1) / 20
+            end
         }
     )
 
@@ -78,6 +80,7 @@ function set_level_controls()
                 level -= 1
                 if (level > 5) level = 1
                 if (level < 1) level = 5
+                new_level = true
             end
         }
     )
@@ -89,34 +92,7 @@ function set_level_controls()
                 level += 1
                 if (level > 5) level = 1
                 if (level < 1) level = 5
-            end
-        }
-    )
-
-    control:set(
-        "up_arrow",
-        function() return btn(2) end, {
-            trigger = function()
-                speed += 1
-                if (speed > max_speed) speed = 1
-                if (speed < 1) speed = max_speed
-                -- Here's the updated mapping for sky_speed.
-                -- We raise 1.1 to the power of (speed - 1), and then divide by 20 to get the range we want.
-                sky_speed = 1.1 ^ (speed - 1) / 20
-            end
-        }
-    )
-
-    control:set(
-        "down_arrow",
-        function() return btn(3) end, {
-            trigger = function()
-                speed -= 1
-                if (speed > max_speed) speed = 1
-                if (speed < 1) speed = max_speed
-                -- Here's the updated mapping for sky_speed.
-                -- We raise 1.1 to the power of (speed - 1), and then divide by 20 to get the range we want.
-                sky_speed = 1.1 ^ (speed - 1) / 20
+                new_level = true
             end
         }
     )
@@ -209,7 +185,7 @@ function set_new_level()
     level_clicked = 0
     idle_subs = 0
 
-    curr_level = _levels.names[curr_level_num + 1]
+    curr_level = _levels.names[level]
     click_val = 0
 
     roll()
@@ -302,12 +278,17 @@ function _update()
     if new_level then
         set_new_level()
     end
+
+    -- update current level
+    _levels[curr_level]:update()
+    -- 4
+
     -- 3
     --[[
     character_switch()
     speed_switch()
     ]]
-    animation(character_table[level].frames, speed)
+    animation(character_table[level].frames, _levels[curr_level]:get_speed_val())
 
     if level ~= prev_level then
         -- Indicate that a background transition is needed
@@ -318,8 +299,7 @@ function _update()
     bg_transition()
 
     -- Increase timer by frame duration
-    chat_spawn_timer += 1 / 30
-    -- assuming 30 frames per second
+    chat_spawn_timer += _dt
 
     -- Check if it's time to possibly spawn a new chat sprite
     if chat_spawn_timer >= chat_spawn_interval then
@@ -341,10 +321,6 @@ function _update()
         end
     end
 
-    -- update current level
-    _levels[curr_level]:update()
-    -- 4
-
     -- clear clicked
     controls:reset()
     --5
@@ -352,6 +328,8 @@ end
 
 function _draw()
     cls()
+
+    local speed = _levels[curr_level]:get_speed_val()
 
     -- draw sky sprites
     for i, s in pairs(sky) do
@@ -396,4 +374,6 @@ function _draw()
     print("streamer name", 2, 2, 8)
     print("level: " .. level, 2, 10, 7)
     print("character speed: " .. speed, 2, 18, 7)
+
+    print("click val: " .. click_val, 4 * 10 + 2, 10)
 end
