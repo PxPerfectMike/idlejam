@@ -1,4 +1,6 @@
-local _keyboard_input = {
+--=============================================================================
+-- Table to track the input from the keyboard
+keyboard_input = {
     active = false,
     text = '',
     input_len = 0,
@@ -8,10 +10,10 @@ local _keyboard_input = {
     int_only = false,
     memory = ''
 }
+--=============================================================================
 
---[[
-=============================================================================
-    Function to initalize keyboard input.
+--=============================================================================
+--[[Function to initalize keyboard input.
     Must be called each time you want to make a new text input box.
 
     input_len:
@@ -23,9 +25,8 @@ local _keyboard_input = {
     int_only:
         Whether the input is all characters or just numbers.
     bgc:
-        The background color for the input text.
-=============================================================================]]
-function _keyboard_input:start(input_len, x, y, int_only, bgc)
+        The background color for the input text.]]
+function keyboard_input:start(input_len, x, y, int_only, bgc)
     self.active = true
     self.input_len = input_len
     self.x = x
@@ -49,19 +50,18 @@ function _keyboard_input:start(input_len, x, y, int_only, bgc)
         self.bgc = true
     end
 end
+--=============================================================================
 
---[[
-=============================================================================
-    stops the keyboard input from running
-=============================================================================]]
-function _keyboard_input:stop()
+--=============================================================================
+-- stops the keyboard input from running
+function keyboard_input:stop()
     self.active = false
 end
+--=============================================================================
 
---[[
-=============================================================================
-    Actively records the keyboard input and prints it out based off of the
-    information given in _keyboard_input:start().
+--=============================================================================
+--[[Actively records the keyboard input and prints it out based off of the
+    information given in keyboard_input:start().
 
     record_val:
         What will prompt recording the value.
@@ -70,9 +70,8 @@ end
         What color to print the text in.
 
     return:
-        Wether or not the input was recorded to memory.
-=============================================================================]]
-function _keyboard_input:record(record_val, text_color)
+        Wether or not the input was recorded to memory.]]
+function keyboard_input:record(record_val, text_color)
     local record = false
 
     if self.active then
@@ -117,40 +116,38 @@ function _keyboard_input:record(record_val, text_color)
 
     return record
 end
+--=============================================================================
 
---[[
-=============================================================================
+--=============================================================================
 -- get the value of what is stored in memory
-=============================================================================]]
-function _keyboard_input:get_val()
+function keyboard_input:get_val()
     return self.memory
 end
+--=============================================================================
 
---[[
-=============================================================================
+--=============================================================================
 -- helper function for finding if a val is between max and min
-=============================================================================]]
 function between(val, min, max)
     return val >= min and val <= max
 end
+--=============================================================================
 
---[[
-=============================================================================
-    helper function that checkes if the key associated with the
-    ascii code was pressed
-=============================================================================]]
+--=============================================================================
+--[[helper function that checkes if the key associated with the
+    ascii code was pressed]]
 function ascii_key_pressed(ascii_num)
     local last_key = stat(31)
     if #last_key > 0 then
         local ascii_val = ord(last_key)
         return ascii_val == ascii_num
     end
+    return false
 end
+--=============================================================================
 
---[[
-=============================================================================
-    demo
-=============================================================================]]
+--=============================================================================
+-- demo
+--=============================================================================
 
 local record_btn_pressed = false
 local inquary_num = 0
@@ -165,18 +162,21 @@ local name_txt = 'what is your name: '
 local age_txt = 'what is your age: '
 local ff_txt = 'what is your favorite food: '
 
+--=============================================================================
 -- put in _init()
-function start__keyboard_input_demo()
+function start_keyboard_input_demo()
     record_btn_pressed = false
     inquary_num = 0
     blink_timer = 0
     txt_visable = true
 
-    _keyboard_input:start(12, 4 * 19, 6 * 1, 1)
+    keyboard_input:start(12, 4 * 19, 6 * 1, 1)
 end
+--=============================================================================
 
+--=============================================================================
 -- put as the last thing in _update()
-function run__keyboard_input_demo()
+function run_keyboard_input_demo()
     cls(2)
     print('return with the [tab] button:', 0, 6 * 0, 7)
 
@@ -184,8 +184,7 @@ function run__keyboard_input_demo()
     print(age_txt, 0, 6 * 2, 7)
     print(ff_txt, 0, 6 * 3, 7)
 
-    -- _keyboard_input.active is globally accessable
-    if _keyboard_input.active then
+    if keyboard_input.active then
         if txt_visable then
             print('[recording...]', 0, 6 * 5, 7)
         else
@@ -206,24 +205,24 @@ function run__keyboard_input_demo()
     end
 
     -- 9 is the ascii code for the tab button
-    local recorded_val = _keyboard_input:record(9)
+    local recorded_val = keyboard_input:record(9)
 
     if recorded_val and not record_btn_pressed then
         if inquary_num == 0 then
             -- name
-            name = _keyboard_input:get_val()
+            name = keyboard_input:get_val()
             name_txt = name_txt .. name
-            _keyboard_input:start(3, 4 * 18, 6 * 2, true, 1)
+            keyboard_input:start(3, 4 * 18, 6 * 2, true, 1)
         elseif inquary_num == 1 then
             -- age
-            age = tonum(_keyboard_input:get_val()) or 0
-            age_txt = age_txt .. _keyboard_input:get_val()
-            _keyboard_input:start(20, 0, 6 * 4, 1)
+            age = tonum(keyboard_input:get_val()) or 0
+            age_txt = age_txt .. keyboard_input:get_val()
+            keyboard_input:start(20, 0, 6 * 4, 1)
         elseif inquary_num == 2 then
             -- favorite food
-            favorite_food = _keyboard_input:get_val()
+            favorite_food = keyboard_input:get_val()
             ff_txt = ff_txt .. "\n" .. favorite_food
-            _keyboard_input:stop()
+            keyboard_input:stop()
         end
         inquary_num += 1
         record_btn_pressed = true
@@ -232,3 +231,4 @@ function run__keyboard_input_demo()
         record_btn_pressed = false
     end
 end
+--=============================================================================

@@ -1,17 +1,17 @@
 -- global variables
 
 -- defined values
-local click_decay_interval = 1 / 4 -- what fraction of a second does the click decay happen
+click_decay_interval = 1 / 4 -- what fraction of a second does the click decay happen
 
 -- counting tracker variables
-local money = long_num()
-local sub_count = long_num()
+money = long_num()
+sub_count = long_num()
 
-local donos_per_viewer = 5 -- donations per viewer
+donos_per_viewer = 5 -- donations per viewer
 
 -- first roll for a random range of donations
 -- then roll for a random value in that range
-local dono_pool = {
+dono_pool = {
     { '1', '2', '3', '4', '5', '9' }, -- 50 percent
     { '10', '20', '40', '50', '90' }, -- 25 percent
     { '100', '500', '900' }, -- 10 percent
@@ -20,36 +20,36 @@ local dono_pool = {
     { '10000000' } -- 1 percent
 }
 
-local speed_levels = 20 -- how many thresholds there are
+speed_levels = 20 -- how many thresholds there are
 
-local active_sub_chance = 4
-local idle_sub_chance = 2
+active_sub_chance = 4
+idle_sub_chance = 2
 
-local cpus = 1
-local cpu_price_growth = 100
+cpus = 1
+cpu_price_growth = 100
 
-local tas_machines = 0
-local cpu_price_growth = 100
+tas_machines = 0
+cpu_price_growth = 100
 
 -- idle sub variables (don't modify)
-local level_clicked = 0 -- how many time the player clicked in this level
-local idle_subs = 0 -- how many subscribers will subscribe while the player does nothing
+level_clicked = 0 -- how many time the player clicked in this level
+idle_subs = 0 -- how many subscribers will subscribe while the player does nothing
 
 --======================================================
 -- !!!!!!! update these so that they work with long_num
-local cpu_base_price = 100
-local cpu_current_price = 100
+cpu_base_price = 100
+cpu_current_price = 100
 
-local tas_base_price = 100
-local tas_current_price = 100
+tas_base_price = 100
+tas_current_price = 100
 
-local click_val = 0 -- the current total value from clicking
+click_val = 0 -- the current total value from clicking
 
-local curr_viewers = 0
-local displayed_viewers = 0
+curr_viewers = 0
+displayed_viewers = 0
 --======================================================
 
-local chance = 0
+chance = 0
 
 --==================================================================================================
 -- level class
@@ -69,7 +69,7 @@ level = {
 level.__index = level
 --==================================================================================================
 -- global table of all levels
-local levels = {
+levels = {
     names = {}
 }
 
@@ -92,8 +92,7 @@ end
 
 -- get base speed value
 function level:get_base_val()
-    return (tas_machines <= self.tas_max and tas_machines or tas_max)
-            * self.tas_benefit
+    return (tas_machines <= self.tas_max and tas_machines or self.tas_max) * self.tas_benefit
 end
 
 -- get minimum click value to get subscribers
@@ -129,8 +128,12 @@ end
 
 function level:update()
     -- find the base speed value
-    local base_val = (tas_machines <= self.tas_max and tas_machines or tas_max)
-            * self.tas_benefit
+    local base_val = (tas_machines <= self.tas_max and tas_machines or self.tas_max) * self.tas_benefit
+
+    -- do click decay
+    if timers:reached_target('click_decay') then
+        click_val -= 1 + self.cpu_benefit
+    end
 
     if click_val < base_val then
         click_val = base_val
@@ -179,11 +182,6 @@ function level:update()
     -- do donation calculations
     if timers:reached_target('donation_time') then
         money += donos_per_viewer * curr_viewers
-    end
-
-    -- do click decay
-    if timers:reached_target('click_decay') then
-        click_val -= 1 + self.cpu_benefit
     end
 end
 
