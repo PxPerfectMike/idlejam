@@ -3,12 +3,20 @@ frame = 0
 
 -- level number
 level = 1
+speed = 1
 
 -- position of the rightmost ground sprite
 rightmost_ground_x = 128
 
 -- table to hold ground sprites
 ground = {}
+
+--
+_ground = {
+    positions = {},
+    type = 1,
+    sprites = {}
+}
 
 -- table to hold sky sprites
 sky = {}
@@ -85,8 +93,6 @@ end
 
 --[[
 function _update()
-    character_switch()
-    speed_switch()
     animation(character_table[level].frames, speed)
 end
 ]]
@@ -139,7 +145,7 @@ end
 ]]
 
 function animation(sprite)
-    local actual_speed = ground_speed_control - _levels[curr_level]:get_speed_val()
+    local actual_speed = ground_speed_control - speed
     --use speed variable here instead of animation_speed
 
     if frame % actual_speed == 0 then
@@ -149,22 +155,3 @@ function animation(sprite)
 end
 
 max_speed = 20
-
---[[
-function character_switch()
-    if (btnp(➡️)) level += 1
-    if (btnp(⬅️)) level -= 1
-    if (level > 5) level = 1
-    if (level < 1) level = 5
-end
-
-function speed_switch()
-    if (btnp(⬆️)) speed += 1
-    if (btnp(⬇️)) speed -= 1
-    if (speed > max_speed) speed = 1
-    if (speed < 1) speed = max_speed
-    -- Here's the updated mapping for sky_speed.
-    -- We raise 1.1 to the power of (speed - 1), and then divide by 20 to get the range we want.
-    sky_speed = 1.1 ^ (speed - 1) / 20
-end
-]]

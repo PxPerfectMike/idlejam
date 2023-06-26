@@ -68,7 +68,6 @@ function set_level_controls()
         function() return stat(34) == 1 end, {
             trigger = function()
                 _levels[curr_level]:clicked()
-                sky_speed = 1.1 ^ (_levels[curr_level]:get_speed_val() - 1) / 20
             end
         }
     )
@@ -102,12 +101,12 @@ function construct_levels()
     -- construct a new level called 'test1'
     curr_level = _level:new(
         'lvl1', {
-            click_threshold = 3,
+            click_threshold = 1,
 
-            cpu_benefit = -0.5,
+            cpu_benefit = 1,
 
-            tas_benefit = 0.25,
-            tas_max = 10,
+            tas_benefit = 1,
+            tas_max = 20,
 
             viewer_interest = 2,
             viewer_flux_range = 2,
@@ -283,12 +282,12 @@ function _update()
     _levels[curr_level]:update()
     -- 4
 
+    -- set speed values
+    speed = _levels[curr_level]:get_speed_val() + 1
+    sky_speed = 1.1 ^ (speed - 1) / 20
     -- 3
-    --[[
-    character_switch()
-    speed_switch()
-    ]]
-    animation(character_table[level].frames, _levels[curr_level]:get_speed_val())
+
+    animation(character_table[level].frames)
 
     if level ~= prev_level then
         -- Indicate that a background transition is needed
@@ -317,7 +316,12 @@ function _update()
             -- Spawn new chat sprite and message at the top
             local chat_frame = chat_table.frames[flr(rnd(#chat_table.frames)) + 1]
             local message_frame = chat_message_table.frames[flr(rnd(#chat_message_table.frames)) + 1]
-            add(chat_entities, { chat = { x = 97, y = 26, frame = chat_frame }, message = { x = 105, y = 26, frame = message_frame } })
+            add(
+                chat_entities, {
+                    chat = { x = 97, y = 26, frame = chat_frame },
+                    message = { x = 105, y = 26, frame = message_frame }
+                }
+            )
         end
     end
 
@@ -326,12 +330,8 @@ function _update()
     --5
 end
 
-function _draw()
-    cls()
-
-    local speed = _levels[curr_level]:get_speed_val()
-
-    -- draw sky sprites
+-- draw sky sprites
+function draw_sky()
     for i, s in pairs(sky) do
         spr(s.frame, s.x, s.y, 1, 1)
         s.x -= sky_speed -- use sky_speed here instead of speed
@@ -342,9 +342,14 @@ function _draw()
             s.frame = sky_table[s.row].frames[flr(rnd(#sky_table[s.row].frames)) + 1]
         end
     end
+end
 
-    -- draw ground sprites
+local test
+
+-- draw ground sprites
+function draw_ground()
     for i, g in pairs(ground) do
+        test = g.x
         spr(g.frame, g.x, 120, 1, 1)
         g.x -= speed / 8 ---------------- adjust this to make the speed relevant to animation frames *********
         -- if a sprite goes off screen on the left, move it to the right side and change its frame
@@ -353,17 +358,24 @@ function _draw()
             g.frame = ground_table[level].frames[flr(rnd(#ground_table[level].frames)) + 1]
         end
     end
+end
 
-    rectfill(96, 25, 128, 128, 5)
+function draw_chat()
     -- right bar
-    -- -- draw chat sprites
+    rectfill(96, 25, 128, 128, 5)
+
+    -- draw chat sprites
     for i, entity in pairs(chat_entities) do
+        print('draw ' .. entity.chat.frame, 4 * 15 + 2, 2, 7)
         spr(entity.chat.frame, entity.chat.x, entity.chat.y, 1, 1)
         spr(entity.message.frame, entity.message.x, entity.message.y, 3, 1)
     end
+end
 
-    rectfill(0, 0, 128, 25, 13)
+function draw_top_bar()
     -- top bar
+    rectfill(0, 0, 128, 25, 13)
+
     -- rectfill(0, 17, 96, 119, 12) -- sky area
     line(0, 25, 128, 25, 7)
     -- top separator
@@ -371,9 +383,22 @@ function _draw()
     -- right separator
 
     spr(current_frame, 42, 104, 2, 2)
+    print("ground frame: " .. test, 4 * 15 + 2, 2, 7)
     print("streamer name", 2, 2, 8)
     print("level: " .. level, 2, 10, 7)
     print("character speed: " .. speed, 2, 18, 7)
 
     print("click val: " .. click_val, 4 * 10 + 2, 10)
+end
+
+function _draw()
+    cls()
+
+    draw_sky()
+
+    draw_ground()
+
+    draw_chat()
+
+    draw_top_bar()
 end
