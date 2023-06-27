@@ -101,7 +101,7 @@ function _level:get_sub_buff()
 end
 
 function _level:clicked()
-    click_val += cpus * (1 + self.cpu_benefit)
+    click_val += cpus * self.cpu_benefit
     -- the max value a click can have
     local click_max = self.click_threshold * speed_levels
     -- base click value
@@ -110,7 +110,8 @@ function _level:clicked()
         click_val = click_max
     end
 
-    _timers:start('click_decay')
+    _timers:start('start_click_decay')
+    if _timers:is_active('click_decay') then _timers:stop('click_decay') end
 
     -- calculate idle sub chance
     _level_clicked += 1
@@ -131,12 +132,20 @@ function _level:update()
     local base_val = (tas_machines <= self.tas_max and tas_machines or self.tas_max) * self.tas_benefit
 
     -- do click decay
+    if _timers:reached_target('start_click_decay') then
+        _timers:start('click_decay')
+        _timers:stop('start_click_decay')
+    end
+
     if _timers:reached_target('click_decay') then
-        click_val -= 1 + self.cpu_benefit
+        click_val -= self.cpu_benefit
     end
 
     if click_val < base_val then
         click_val = base_val
+    end
+
+    if click_val == base_val then
         _timers:stop('click_decay')
     end
 

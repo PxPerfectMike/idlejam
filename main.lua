@@ -1,9 +1,8 @@
 title_screen = { inited = false }
 game = { inited = false }
-got_name = false
 player_name = ''
 prompt = {
-    start = { x = 10, y = 6 },
+    start = { x = 0, y = 6 },
     len = 12,
     bg_color = 1
 }
@@ -59,6 +58,8 @@ new_level = false -- flag to switch level
 
 function make_level_timers()
     _timer:new('click_decay', 0, click_decay_interval)
+    _timer:new('start_click_decay', 0, 3.2)
+    _timer:new('change_speed', 0, 0.9)
     _timer:new('update_viewers', 0, 4, 1)
     _timer:new('incrament_viewers', 0.4, 0.4, 0.3)
     _timer:new('donation_time', 0, 20, 5)
@@ -312,7 +313,28 @@ function game:update(dt)
     -- 4
 
     -- set speed values
-    speed = _levels[curr_level]:get_speed_val() + 1
+
+    local level_data = _levels[curr_level]
+
+    local curr_speed = level_data:get_speed_val()
+
+    if click_val != level_data:get_base_val() then
+        _timers:start('change_speed')
+    elseif curr_speed == speed then
+        _timers:stop('change_speed')
+    end
+
+    if _timers:reached_target('change_speed') and curr_speed > speed then
+        speed += 1
+    end
+    if _timers:reached_target('change_speed') and curr_speed < speed then
+        speed -= 1
+    end
+
+    if speed == 0 then
+        speed = 1
+    end
+
     sky_speed = 1.1 ^ (speed - 1) / 20
     -- 3
 
@@ -379,7 +401,6 @@ function _update()
     else
         if not game.inited then
             game:init()
-
             game.inited = true
         end
         game:update(_dt)
@@ -475,9 +496,9 @@ function title_screen:draw()
         prompt.start.x + txt_dim.x * prompt.len - 1, prompt.start.y + txt_dim.y - 1,
         prompt.bg_color
     )
-
-    print('(tab to return)', prompt.start.x + txt_dim.x * prompt.len, prompt.start.y, 7)
     --============================================================================================
+
+    print('[tab to return]', prompt.start.x + txt_dim.x * prompt.len, prompt.start.y, 7)
 
     keyboard_input:draw()
 end

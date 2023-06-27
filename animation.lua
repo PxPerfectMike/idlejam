@@ -42,8 +42,6 @@ for i, start_frame in ipairs(ground_start_frames) do
 end
 
 -- all tables spawn by index and must be in the same order to maintain theme consistency
-
--- all tables spawn by index and must be in the same order to maintain theme consistency
 sky_table = {}
 for i = 1, 12 do
     local start_frame = 96

@@ -74,7 +74,7 @@ end
 
 -- if the timer as reached it's targeted time
 function _timer:reached_target()
-    return self.time >= self.target
+    return self.target != 0 and self.time >= self.target or false
 end
 
 -- if the timer is currently running
