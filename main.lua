@@ -95,6 +95,18 @@ function bg_transition()
         change_bg_color(13, 11, 0, 48, 63, 104)
         change_bg_color(5, 10, 0, 48, 63, 104)
         change_bg_color(1, 8, 0, 48, 63, 104)
+        change_bg_color(2, 12, 0, 48, 63, 104)
+    end
+    if level == 4 then
+        change_bg_color(11, 0, 0, 48, 63, 104)
+        change_bg_color(10, 5, 0, 48, 63, 104)
+        change_bg_color(8, 3, 0, 48, 63, 104)
+    end
+    if level == 5 then
+        change_bg_color(5, 0, 0, 48, 63, 104)
+        change_bg_color(8, 0, 0, 48, 63, 104)
+        change_bg_color(12, 0, 0, 48, 63, 104)
+        change_bg_color(3, 0, 0, 48, 63, 104)
     end
 
     -- Reset the flag
