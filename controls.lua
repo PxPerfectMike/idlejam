@@ -13,7 +13,7 @@ control = {
 control.__index = control
 --=======================================================================================
 -- global table of all controls
-controls = { active = true, names = {} }
+controls = { active = false, names = {} }
 
 -- how long to hold a button for it to be considered a press
 __press_time = 0.3
@@ -23,7 +23,18 @@ __press_time = 0.3
 function control:set(name, conditional, functions)
     assert(type(name) == 'string', 'there needs to be a "name" string!')
     assert(type(conditional) == 'function', "conditional needs to be a function!")
+    assert(type(conditional()) == 'boolean', "conditional must return a boolean value!")
     assert(type(functions) == 'table', "functions must be a table!")
+
+    for k, v in pairs(functions) do
+        assert(type(k) == 'string')
+
+        if k == 'trigger' or k == 'press' or k == 'release' then
+            assert(type(v) == 'function', name .. " was given an inapropriate " .. k .. " value. must be function!")
+        else
+            assert(false, name .. " was given an unwarented key")
+        end
+    end
 
     if controls[name] == nil then add(controls.names, name) end
     controls[name] = setmetatable(functions or {}, self)

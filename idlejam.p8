@@ -11,7 +11,6 @@ __lua__
 #include testlevels.lua
 
 #include animation.lua
-#include main.lua
 
 --[[
 function _init()
@@ -26,6 +25,9 @@ function _draw()
     tl_draw()
 end
 ]]
+
+max_speed = 20
+#include main.lua
 
 __gfx__
 eeeeeeee111111112222222233333333444444445555555566666666777777778888888899999999aaaaaaaabbbbbbbbccccccccddddddddffffffffeeeeeeee

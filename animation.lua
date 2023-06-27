@@ -11,13 +11,6 @@ rightmost_ground_x = 128
 -- table to hold ground sprites
 ground = {}
 
---
-_ground = {
-    positions = {},
-    type = 1,
-    sprites = {}
-}
-
 -- table to hold sky sprites
 sky = {}
 
@@ -47,8 +40,6 @@ ground_table = {}
 for i, start_frame in ipairs(ground_start_frames) do
     ground_table[i] = { name = ground_names[i], frames = generate_frames(start_frame, 7) }
 end
-
--- all tables spawn by index and must be in the same order to maintain theme consistency
 
 -- all tables spawn by index and must be in the same order to maintain theme consistency
 sky_table = {}

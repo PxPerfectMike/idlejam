@@ -1,3 +1,14 @@
+title_screen = { inited = false }
+game = { inited = false }
+player_name = ''
+prompt = {
+    start = { x = 0, y = 6 },
+    len = 12,
+    bg_color = 1
+}
+
+--================================================================================================
+
 -- chat variables
 chat_spawn_timer = 0
 chat_spawn_interval = 1 -- in seconds
@@ -20,6 +31,8 @@ chat_messages = { 232, 235 }
 -- make chat head table
 chat_table = { frames = chat_frames }
 chat_message_table = { frames = chat_messages }
+
+--================================================================================================
 
 -- pico state hooks
 State = {
@@ -45,6 +58,8 @@ new_level = false -- flag to switch level
 
 function make_level_timers()
     _timer:new('click_decay', 0, click_decay_interval)
+    _timer:new('start_click_decay', 0, 3.2)
+    _timer:new('change_speed', 0, 0.9)
     _timer:new('update_viewers', 0, 4, 1)
     _timer:new('incrament_viewers', 0.4, 0.4, 0.3)
     _timer:new('donation_time', 0, 20, 5)
@@ -59,10 +74,9 @@ function init_level_timers()
     _timers:start('sub_time')
 end
 
-function set_level_controls()
-    -- enable mouse and buttons (0x5f2d, lmb, rmb)
-    poke(0x5f2d, 0x1, 0x2)
+--================================================================================================
 
+function set_level_controls()
     control:set(
         "lmb",
         function() return stat(34) == 1 end, {
@@ -95,7 +109,11 @@ function set_level_controls()
             end
         }
     )
+
+    controls:set_active(true)
 end
+
+--================================================================================================
 
 function construct_levels()
     -- construct a new level called 'test1'
@@ -180,7 +198,7 @@ function construct_levels()
     )
 end
 
-function set_new_level()
+function set_new_levels()
     level_clicked = 0
     idle_subs = 0
 
@@ -197,7 +215,9 @@ function set_new_level()
     new_level = false
 end
 
-function _init()
+--================================================================================================
+
+function game:init()
     construct_levels()
     set_level_controls()
     make_level_timers()
@@ -227,6 +247,23 @@ function _init()
         end
     end
 end
+
+--================================================================================================
+
+function title_screen:init()
+    keyboard_input:start(prompt.len, prompt.start.x, prompt.start.y)
+end
+
+--================================================================================================
+
+function _init()
+    -- enable mouse and buttons (0x5f2d, lmb, rmb)
+    poke(0x5f2d, 0x1, 0x2)
+
+    title_screen:init()
+end
+
+--================================================================================================
 
 function change_bg_color(old_color, new_color, startX, startY, endX, endY)
     for y = startY, endY do
@@ -276,18 +313,11 @@ end
 
 prev_level = 1 -- Initialize this with your initial level
 
-function _update()
-    local _dt = 1 / stat(7)
+--================================================================================================
 
-    controls:update(_dt)
-    -- 1
-
-    -- update all timers
-    _timers:update(_dt)
-    -- 2
-
+function game:update(dt)
     if new_level then
-        set_new_level()
+        set_new_levels()
     end
 
     -- update current level
@@ -295,7 +325,28 @@ function _update()
     -- 4
 
     -- set speed values
-    speed = _levels[curr_level]:get_speed_val() + 1
+
+    local level_data = _levels[curr_level]
+
+    local curr_speed = level_data:get_speed_val()
+
+    if click_val != level_data:get_base_val() then
+        _timers:start('change_speed')
+    elseif curr_speed == speed then
+        _timers:stop('change_speed')
+    end
+
+    if _timers:reached_target('change_speed') and curr_speed > speed then
+        speed += 1
+    end
+    if _timers:reached_target('change_speed') and curr_speed < speed then
+        speed -= 1
+    end
+
+    if speed == 0 then
+        speed = 1
+    end
+
     sky_speed = 1.1 ^ (speed - 1) / 20
     -- 3
 
@@ -310,7 +361,7 @@ function _update()
     bg_transition()
 
     -- Increase timer by frame duration
-    chat_spawn_timer += _dt
+    chat_spawn_timer += dt
 
     -- Check if it's time to possibly spawn a new chat sprite
     if chat_spawn_timer >= chat_spawn_interval then
@@ -336,11 +387,42 @@ function _update()
             )
         end
     end
-
-    -- clear clicked
-    controls:reset()
-    --5
 end
+
+--================================================================================================
+
+function title_screen:update(dt)
+    if keyboard_input:record(9) and #keyboard_input:get_val() > 0 then
+        player_name = keyboard_input:get_val()
+        keyboard_input:stop()
+    end
+end
+
+--================================================================================================
+
+function _update()
+    local _dt = 1 / stat(7)
+
+    controls:update(_dt)
+
+    -- update all timers
+    _timers:update(_dt)
+
+    if #player_name == 0 then
+        title_screen:update(_dt)
+    else
+        if not game.inited then
+            game:init()
+            game.inited = true
+        end
+        game:update(_dt)
+    end
+
+    -- clear triggered for all controls
+    controls:reset()
+end
+
+--================================================================================================
 
 -- draw sky sprites
 function draw_sky()
@@ -356,12 +438,9 @@ function draw_sky()
     end
 end
 
-local test
-
 -- draw ground sprites
 function draw_ground()
     for i, g in pairs(ground) do
-        test = g.x
         spr(g.frame, g.x, 120, 1, 1)
         g.x -= speed / 8 ---------------- adjust this to make the speed relevant to animation frames *********
         -- if a sprite goes off screen on the left, move it to the right side and change its frame
@@ -395,17 +474,17 @@ function draw_top_bar()
     -- right separator
 
     spr(current_frame, 42, 104, 2, 2)
-    print("ground frame: " .. test, 4 * 15 + 2, 2, 7)
-    print("streamer name", 2, 2, 8)
+    print("ground frame: ", 4 * 15 + 2, 2, 7)
+    print(player_name, 2, 2, 8)
     print("level: " .. level, 2, 10, 7)
     print("character speed: " .. speed, 2, 18, 7)
 
     print("click val: " .. click_val, 4 * 10 + 2, 10)
 end
 
-function _draw()
-    cls()
+--================================================================================================
 
+function game:draw()
     draw_sky()
 
     draw_ground()
@@ -413,4 +492,37 @@ function _draw()
     draw_chat()
 
     draw_top_bar()
+end
+
+--================================================================================================
+
+function title_screen:draw()
+    print("what's your streamer tag?:", 0, 0, 7)
+
+    --============================================================================================
+    -- draw the text input background box
+    local txt_dim = { x = 4, y = 6 }
+
+    rectfill(
+        prompt.start.x - 1, prompt.start.y - 1,
+        prompt.start.x + txt_dim.x * prompt.len - 1, prompt.start.y + txt_dim.y - 1,
+        prompt.bg_color
+    )
+    --============================================================================================
+
+    print('[tab to return]', prompt.start.x + txt_dim.x * prompt.len, prompt.start.y, 7)
+
+    keyboard_input:draw()
+end
+
+--================================================================================================
+
+function _draw()
+    cls()
+
+    if #player_name == 0 then
+        title_screen:draw()
+    else
+        game:draw()
+    end
 end
