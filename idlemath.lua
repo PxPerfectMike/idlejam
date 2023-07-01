@@ -109,7 +109,7 @@ function _level:clicked()
     if click_val > click_max then
         click_val = click_max
     end
-
+    -- this is different
     _timers:start('start_click_decay')
     if _timers:is_active('click_decay') then _timers:stop('click_decay') end
 

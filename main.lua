@@ -7,30 +7,72 @@ prompt = {
     bg_color = 1
 }
 
---================================================================================================
+-- the height of the top information bar
+local top_bar_height = 1 + 8 * 5
 
--- chat variables
-chat_spawn_timer = 0
+--== picture handling methods =======================================================================
+
+-- picture variables
 chat_spawn_interval = 1 -- in seconds
-chat_spawn_chance = 0.2 -- percentage chance to spawn a chat
+chat_spawn_chance = 0.2 -- percentage chance to spawn a picture
 max_chat_count = 14
 
--- table to hold chat sprites
+-- table to hold picture sprites
 chat_entities = {}
+
+-- working picture stuff
+-- picture colors palet
+chat_pictures = { 12, 2, 11, 8, 10, 7, 1, 9 }
+
+chat_messages = { 232, 235 }
+
+-- make picture head table
+chat_picture_table = { frames = chat_pictures }
+chat_message_table = { frames = chat_messages }
+
+function spawn_new_chat()
+    -- Check if it's time to possibly spawn a new picture sprite
+    if _timers:reached_target('chat_spawn') then
+        -- Remove picture sprite at the bottom
+        if #chat_entities == max_chat_count then
+            del(chat_entities, chat_entities[1])
+        end
+        -- Chance to spawn a new picture sprite
+        if rnd() < chat_spawn_chance and #chat_entities < max_chat_count then
+            -- Move existing picture sprites down
+            move_chat_down()
+            -- Spawn new picture sprite and message at the top
+            local picture_frame = chat_picture_table.frames[flr(rnd(#chat_picture_table.frames)) + 1]
+
+            local message_frame = chat_message_table.frames[flr(rnd(#chat_message_table.frames)) + 1]
+
+            add(
+                chat_entities, {
+                    picture = { x = 97, y = top_bar_height + 1, color = picture_frame },
+                    message = { x = 105, y = top_bar_height + 1, frame = message_frame }
+                }
+            )
+        end
+    end
+end
+
 function move_chat_down()
     for i, entity in pairs(chat_entities) do
-        entity.chat.y += 8 -- adjust this value to control how much sprites move down
+        entity.picture.y += 8 -- adjust this value to control how much sprites move down
         entity.message.y += 8 -- adjust this value to control how much messages move down
     end
 end
 
--- working chat stuff
-chat_frames = { 80, 81, 82, 83, 84, 85, 86, 87 }
-chat_messages = { 232, 235 }
-
--- make chat head table
-chat_table = { frames = chat_frames }
-chat_message_table = { frames = chat_messages }
+function draw_chat()
+    -- draw picture sprites
+    for i, entity in pairs(chat_entities) do
+        -- draw picture color
+        rectfill(entity.picture.x + 2, entity.picture.y + 2, entity.picture.x + 5, entity.picture.y + 6, entity.picture.color)
+        -- 80 is the chat picture overlay
+        spr(80, entity.picture.x, entity.picture.y, 1, 1)
+        spr(entity.message.frame, entity.message.x, entity.message.y, 3, 1)
+    end
+end
 
 --================================================================================================
 
@@ -56,9 +98,10 @@ curr_level = ''
 new_level = false -- flag to switch level
 --===============================================================
 
-function make_level_timers()
+function construct_level_timers()
     _timer:new('click_decay', 0, click_decay_interval)
-    _timer:new('start_click_decay', 0, 3.2)
+    _timer:new('chat_spawn', 0, chat_spawn_interval)
+    _timer:new('start_click_decay', 0, 3)
     _timer:new('change_speed', 0, 0.9)
     _timer:new('update_viewers', 0, 4, 1)
     _timer:new('incrament_viewers', 0.4, 0.4, 0.3)
@@ -69,6 +112,7 @@ end
 
 function init_level_timers()
     _timers:start('update_viewers')
+    _timers:start('chat_spawn')
     _timers:start('incrament_viewers')
     _timers:start('donation_time')
     _timers:start('sub_time')
@@ -110,7 +154,34 @@ function set_level_controls()
         }
     )
 
+    control:set(
+        "cpu_upgrade",
+        function() return btn(4) end, {
+            trigger = function()
+                buttons:set_state("cpu_upgrade", 2)
+            end,
+            release = function()
+                buttons:set_state("cpu_upgrade", 1)
+            end
+        }
+    )
+
+    control:set(
+        "tas_upgrade",
+        function() return btn(5) end, {
+            trigger = function()
+                buttons:set_state("tas_upgrade", 2)
+            end,
+            release = function()
+                buttons:set_state("tas_upgrade", 1)
+            end
+        }
+    )
+
     controls:set_active(true)
+end
+
+function draw_mouse()
 end
 
 --================================================================================================
@@ -118,7 +189,7 @@ end
 function construct_levels()
     -- construct a new level called 'test1'
     curr_level = _level:new(
-        'lvl1', {
+        'quarrycraft', {
             click_threshold = 1,
 
             cpu_benefit = 1,
@@ -134,7 +205,7 @@ function construct_levels()
     )
 
     _level:new(
-        'lvl2', {
+        'inky spirits', {
             click_threshold = 10,
 
             cpu_benefit = 1,
@@ -150,7 +221,7 @@ function construct_levels()
     )
 
     _level:new(
-        'lvl3', {
+        'fruit run', {
             click_threshold = 1000,
 
             cpu_benefit = 1,
@@ -166,7 +237,7 @@ function construct_levels()
     )
 
     _level:new(
-        'lvl4', {
+        'ghost the most', {
             click_threshold = 1000,
 
             cpu_benefit = 1,
@@ -182,7 +253,7 @@ function construct_levels()
     )
 
     _level:new(
-        'lvl5', {
+        'nobodys nebula', {
             click_threshold = 1000,
 
             cpu_benefit = 1,
@@ -197,6 +268,8 @@ function construct_levels()
         }
     )
 end
+
+--================================================================================================
 
 function set_new_levels()
     level_clicked = 0
@@ -210,6 +283,8 @@ function set_new_levels()
     curr_viewers = 0
     displayed_viewers = 0
 
+    speed = 1
+
     init_level_timers()
 
     new_level = false
@@ -217,21 +292,39 @@ end
 
 --================================================================================================
 
+function construct_level_buttons()
+    button:new(
+        "cpu_upgrade",
+        { x = 109, y = 8, w = 16, h = 16 },
+        {
+            { x = 64, y = 96, w = 16, h = 16 },
+            { x = 80, y = 96, w = 16, h = 16 }
+        }
+    )
+
+    button:new(
+        "tas_upgrade",
+        { x = 90, y = 8, w = 16, h = 16 },
+        {
+            { x = 96, y = 96, w = 16, h = 16 },
+            { x = 112, y = 96, w = 16, h = 16 }
+        }
+    )
+end
+
+--================================================================================================
+
 function game:init()
     construct_levels()
     set_level_controls()
-    make_level_timers()
+    construct_level_timers()
     init_level_timers()
+    construct_level_buttons()
 
     bg_transition_needed = true
 
-    cls()
-    sky_speed = 0.3
     -- initial sky speed
-    palt(14, true)
-    -- pink color as transparency is true
-    palt(0, false)
-    -- black color as transparency is false
+    sky_speed = 0.3
 
     -- initialize ground with enough sprites to fill the screen
     for i = 0, 15 do
@@ -259,6 +352,11 @@ end
 function _init()
     -- enable mouse and buttons (0x5f2d, lmb, rmb)
     poke(0x5f2d, 0x1, 0x2)
+
+    -- pink color as transparency is true
+    palt(14, true)
+    -- black color as transparency is false
+    palt(0, false)
 
     title_screen:init()
 end
@@ -299,21 +397,25 @@ function bg_transition()
     bg_transition_needed = false
 end
 
+-- draw sky sprites
+function draw_sky()
+    for i, s in pairs(sky) do
+        spr(s.frame, s.x, s.y, 1, 1)
+        s.x -= sky_speed -- use sky_speed here instead of speed
+        -- if a sprite goes off screen on the left, move it to the right side and change its frame
+        if s.x < -8 then
+            s.x = s.x + 128
+            -- select a new sprite from the correct row
+            s.frame = sky_table[s.row].frames[flr(rnd(#sky_table[s.row].frames)) + 1]
+        end
+    end
+end
+
 prev_level = 1 -- Initialize this with your initial level
 
 --================================================================================================
 
-function game:update(dt)
-    if new_level then
-        set_new_levels()
-    end
-
-    -- update current level
-    _levels[curr_level]:update()
-    -- 4
-
-    -- set speed values
-
+function incrament_animation_speed()
     local level_data = _levels[curr_level]
 
     local curr_speed = level_data:get_speed_val()
@@ -327,6 +429,7 @@ function game:update(dt)
     if _timers:reached_target('change_speed') and curr_speed > speed then
         speed += 1
     end
+
     if _timers:reached_target('change_speed') and curr_speed < speed then
         speed -= 1
     end
@@ -334,11 +437,37 @@ function game:update(dt)
     if speed == 0 then
         speed = 1
     end
+end
+
+--================================================================================================
+
+local mouse_state = 0
+
+function game:update(dt)
+    if new_level then
+        set_new_levels()
+    end
+
+    -- update current level
+    _levels[curr_level]:update()
+    -- 4
+
+    incrament_animation_speed()
 
     sky_speed = 1.1 ^ (speed - 1) / 20
     -- 3
 
     animation(character_table[level].frames)
+
+    if buttons:is_in("cpu_upgrade", stat(32), stat(33)) then
+        if stat(34) == 1 then
+            mouse_state = 2
+        else
+            mouse_state = 1
+        end
+    else
+        mouse_state = 0
+    end
 
     if level ~= prev_level then
         -- Indicate that a background transition is needed
@@ -348,33 +477,7 @@ function game:update(dt)
 
     bg_transition()
 
-    -- Increase timer by frame duration
-    chat_spawn_timer += dt
-
-    -- Check if it's time to possibly spawn a new chat sprite
-    if chat_spawn_timer >= chat_spawn_interval then
-        -- Reset timer
-        chat_spawn_timer = 0
-
-        -- Remove chat sprite at the bottom
-        if #chat_entities == max_chat_count then
-            del(chat_entities, chat_entities[1])
-        end
-        -- Chance to spawn a new chat sprite
-        if rnd() < chat_spawn_chance and #chat_entities < max_chat_count then
-            -- Move existing chat sprites down
-            move_chat_down()
-            -- Spawn new chat sprite and message at the top
-            local chat_frame = chat_table.frames[flr(rnd(#chat_table.frames)) + 1]
-            local message_frame = chat_message_table.frames[flr(rnd(#chat_message_table.frames)) + 1]
-            add(
-                chat_entities, {
-                    chat = { x = 97, y = 26, frame = chat_frame },
-                    message = { x = 105, y = 26, frame = message_frame }
-                }
-            )
-        end
-    end
+    spawn_new_chat()
 end
 
 --================================================================================================
@@ -399,6 +502,7 @@ function _update()
     if #player_name == 0 then
         title_screen:update(_dt)
     else
+        -- initalize main game state
         if not game.inited then
             game:init()
             game.inited = true
@@ -411,20 +515,6 @@ function _update()
 end
 
 --================================================================================================
-
--- draw sky sprites
-function draw_sky()
-    for i, s in pairs(sky) do
-        spr(s.frame, s.x, s.y, 1, 1)
-        s.x -= sky_speed -- use sky_speed here instead of speed
-        -- if a sprite goes off screen on the left, move it to the right side and change its frame
-        if s.x < -8 then
-            s.x = s.x + 128
-            -- select a new sprite from the correct row
-            s.frame = sky_table[s.row].frames[flr(rnd(#sky_table[s.row].frames)) + 1]
-        end
-    end
-end
 
 -- draw ground sprites
 function draw_ground()
@@ -439,35 +529,57 @@ function draw_ground()
     end
 end
 
-function draw_chat()
-    -- right bar
-    rectfill(96, 25, 128, 128, 5)
-
-    -- draw chat sprites
-    for i, entity in pairs(chat_entities) do
-        print('draw ' .. entity.chat.frame, 4 * 15 + 2, 2, 7)
-        spr(entity.chat.frame, entity.chat.x, entity.chat.y, 1, 1)
-        spr(entity.message.frame, entity.message.x, entity.message.y, 3, 1)
-    end
-end
-
-function draw_top_bar()
+function draw_bars()
     -- top bar
-    rectfill(0, 0, 128, 25, 13)
+    rectfill(0, 0, 128, top_bar_height, 13)
+    -- right bar
+    rectfill(96, top_bar_height, 128, 128, 5)
 
     -- rectfill(0, 17, 96, 119, 12) -- sky area
-    line(0, 25, 128, 25, 7)
-    -- top separator
-    line(96, 25, 96, 128, 7)
-    -- right separator
 
+    -- top separator
+    line(0, top_bar_height, 128, top_bar_height, 7)
+    -- right separator
+    line(96, top_bar_height, 96, 128, 7)
+end
+
+function draw_info()
     spr(current_frame, 42, 104, 2, 2)
-    print("ground frame: ", 4 * 15 + 2, 2, 7)
     print(player_name, 2, 2, 8)
     print("level: " .. level, 2, 10, 7)
     print("character speed: " .. speed, 2, 18, 7)
 
     print("click val: " .. click_val, 4 * 10 + 2, 10)
+
+    local speed_val = _levels[curr_level]:get_speed_val()
+
+    --============================================================================================
+
+    local speed_display = ''
+
+    for i = 0, 19 do
+        if i < speed_val then
+            speed_display = speed_display .. '▮'
+        else
+            speed_display = speed_display .. ' '
+        end
+    end
+
+    print('[' .. speed_display .. ']', 2, 2 + 6 * 5, 11)
+
+    --============================================================================================
+end
+
+function draw_buttons()
+    buttons:move("tas_upgrade", 90, 22)
+    buttons:draw("tas_upgrade")
+
+    buttons:move("cpu_upgrade", 109, 22)
+    buttons:draw("cpu_upgrade")
+end
+
+function draw_mouse()
+    spr(mouse_state, stat(32), stat(33))
 end
 
 --================================================================================================
@@ -477,9 +589,15 @@ function game:draw()
 
     draw_ground()
 
+    draw_bars()
+
     draw_chat()
 
-    draw_top_bar()
+    draw_info()
+
+    draw_buttons()
+
+    draw_mouse()
 end
 
 --================================================================================================
@@ -501,6 +619,8 @@ function title_screen:draw()
     print('[tab to return]', prompt.start.x + txt_dim.x * prompt.len, prompt.start.y, 7)
 
     keyboard_input:draw()
+
+    draw_mouse()
 end
 
 --================================================================================================
@@ -508,7 +628,7 @@ end
 function _draw()
     cls()
 
-    if #player_name == 0 then
+    if not game.inited then
         title_screen:draw()
     else
         game:draw()

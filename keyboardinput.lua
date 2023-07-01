@@ -78,6 +78,11 @@ function keyboard_input:record(record_val)
         local last_key = stat(31)
         if #last_key > 0 then
             local ascii_val = ord(last_key)
+
+            -- stops p and enter from pausing the game
+            if ascii_val == 80 or 13 then
+                poke(0x5f30, 1)
+            end
             -- taking care of which set of inputs it accetable
             -- 32 - 126: printable characters
             -- 48 - 57: number characters
